@@ -10,7 +10,7 @@ from settings import *
 
 def thisistheendmyoldfriend():
     """
-This function simply indicates that the game is finished or not.
+This function simply indicates if the game is finished or not.
     """
     global USER_1, USER_2, GAME_STATE, \
            TOKENS_PLAYABLE_BY_USER
@@ -249,7 +249,7 @@ The function returns all the taken changed.
 
 def player_human(row, col):
     """
-`(row, col)` are coordinates of the cell clicked which are directly returned
+`(row, col)` are coordinates of the cell choosen.which are directly returned
 here because this is the choice of a human.
     """
     return (row, col)
@@ -265,7 +265,7 @@ GAME_STATE[PLAYERS].append(player_human)
 
 def player_sai(row, col):
     """
-`(row, col)` are coordinates of the cell clicked. There are not used by the AI.
+`(row, col)` are coordinates of the cell choosen. There are not used by the AI.
 This is just a way to seet the AI plays when the user clicks on the game.
 
 
@@ -312,7 +312,7 @@ See the functions `player_ai_best_one_level` and `findbestchoicesdeeply`.
 
 def player_ai_best_one_level(row, col):
     """
-`(row, col)` are coordinates of the cell clicked. There are not used by the AI.
+`(row, col)` are coordinates of the cell choosen. There are not used by the AI.
 This is just a way to seet the AI plays when the user clicks on the game.
 
 
@@ -331,7 +331,8 @@ info::
     This function prepares the job for the more general function
     `player_ai_best_three_levels` above.
     In other word we could have just write one single function for
-    `player_ai_best_one_level` and `player_ai_best_three_levels`.
+    `player_ai_best_one_level` and `player_ai_best_three_levels`
+    (this is a very easy exercise).
     """
     maxchanged, tochoose = bestchoicenow()
 
@@ -345,13 +346,14 @@ info::
 GAME_STATE[PLAYERS].append(player_ai_best_one_level)
 
 
-# -------------------------------------------------------------------- #
-# -- PLAYER 4 : AI ???? -- #
-# -------------------------------------------------------------------- #
+# -------------------------------------------- #
+# -- PLAYER 4 : AI - MOST TOKENS ON 3 TURNS -- #
+# -------------------------------------------- #
 
 def findbestchoicesdeeply(level):
     """
-See the function `player_ai_best_three_levels`.
+This function implements the method for the AI programmed in the function
+`player_ai_best_three_levels`.
     """
     global GAME_STATE, PLAYER_ID, TOKENS_PLAYABLE_BY_USER
 
@@ -374,7 +376,7 @@ See the function `player_ai_best_three_levels`.
 
 def player_ai_best_three_levels(row, col):
     """
-`(row, col)` are coordinates of the cell clicked. There are not used by the AI.
+`(row, col)` are coordinates of the cell choosen. There are not used by the AI.
 This is just a way to seet the AI plays when the user clicks on the game.
 
 

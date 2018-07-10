@@ -1,0 +1,5 @@
+==========
+2018-06-23
+==========
+
+Versin bêta : un seul fichier Python pour jouer seul via tkinter. Pour le moment cela n'est pas totalament fonctionnel...

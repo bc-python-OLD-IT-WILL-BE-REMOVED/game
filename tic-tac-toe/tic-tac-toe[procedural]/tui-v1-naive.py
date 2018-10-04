@@ -1,23 +1,37 @@
-# --------------- #
-# -- CONSTANTS -- #
-# --------------- #
+# ----------------------- #
+# -- GENERAL CONSTANTS -- #
+# ----------------------- #
 
 CROSS, DISK, EMPTY = "×", "o", " "
 
-PLAYERS = [CROSS, DISK]
-
-HRULE = "-"*(3*3 + 2)
+PLAYERS       = [CROSS, DISK]
+ACTUAL_PLAYER = 0
 
 GRID = None
+
+
+# ------------------- #
+# -- TUI CONSTANTS -- #
+# ------------------- #
+
+HRULE = "-"*(3*3 + 2)
 
 
 # ----------------------- #
 # -- STATE OF THE GAME -- #
 # ----------------------- #
 
+def nextplayer():
+    global ACTUAL_PLAYER
 
-def reset_grid():
-    global GRID
+    ACTUAL_PLAYER += 1
+    ACTUAL_PLAYER %= 2
+
+
+def reset_game():
+    global ACTUAL_PLAYER, GRID, EMPTY
+
+    ACTUAL_PLAYER = 0
 
     GRID = [
         [EMPTY for _ in range(3)]
@@ -26,16 +40,18 @@ def reset_grid():
 
 
 def cell_can_be_played(row, col):
+    global GRID, EMPTY
+
     return GRID[row][col] == EMPTY
 
 
 def addtoken(row, col, token):
+    global GRID
+
     GRID[row][col] = token
 
 
 def single_token_found(tokens):
-    global EMPTY
-
     singletoken = None
 
     if len(tokens) == 1:
@@ -44,8 +60,8 @@ def single_token_found(tokens):
     return singletoken
 
 
-def gamefinished():
-    global GRID
+def game_state():
+    global GRID, PLAYERS
 
 # A winner ?
     for nb in range(3):
@@ -107,7 +123,7 @@ def gamefinished():
 # --------- #
 
 def printgrid():
-    global GRID
+    global GRID, HRULE
 
     for row in range(3):
         print(" " + " | ".join(GRID[row]) + " ")
@@ -115,61 +131,69 @@ def printgrid():
         if row != 2:
             print(HRULE)
 
-def main():
-    reset_grid()
 
-    actual_player = 0
+def validate_answer(answer):
+    badanswer = (True, None, None)
+
+    answer = answer.split(",")
+
+    if len(answer) != 2:
+        print("Too much colons....")
+        return badanswer
+
+    row, col = answer
+
+    if not row.isdigit() or not col.isdigit():
+        print("Bad number formats...")
+        return badanswer
+
+    row, col = int(row) - 1, int(col) - 1
+
+    if not 0 <= row <= 2 or not 0 <= col <= 2:
+        print("Numbers not in {1, 2, 3}...")
+        return badanswer
+
+    if not cell_can_be_played(row, col):
+        print("Cell contains a", GRID[row][col], "token...")
+        return badanswer
+
+    return False, row, col
+
+
+def main():
+    global PLAYERS, ACTUAL_PLAYER
+
+    reset_game()
 
     print()
     printgrid()
 
     while True:
         print()
-        print("PLAYER ", actual_player + 1, "plays with", PLAYERS[actual_player])
+        print("PLAYER ", ACTUAL_PLAYER + 1, "plays with", PLAYERS[ACTUAL_PLAYER])
 
-        while True:
+        badanswer = True
+
+        while badanswer:
             answer = input("#row, #column (numbers between 1 and 2):")
 
-            answer = answer.split(",")
+            badanswer, row, col = validate_answer(answer)
 
-            if len(answer) != 2:
-                print("Too much colons....")
-                continue
-
-            row, col = answer
-
-            if not row.isdigit() or not col.isdigit():
-                print("Bad number formats...")
-                continue
-
-            row, col = int(row) - 1, int(col) - 1
-
-            if not 0 <= row <= 2 or not 0 <= col <= 2:
-                print("Numbers not in {1, 2, 3}...")
-                continue
-
-            if not cell_can_be_played(row, col):
-                print("Cell contains a", GRID[row][col], "token...")
-                continue
-
-            break
-
-        addtoken(row, col, PLAYERS[actual_player])
+        addtoken(row, col, PLAYERS[ACTUAL_PLAYER])
         printgrid()
 
-        endofgame, winningtoken = gamefinished()
+        endofgame, winningtoken = game_state()
 
         if endofgame:
             if winningtoken == None:
-                print("Noone wins...")
+                print("No one wins...")
 
             else:
-                print("PLAYER ", actual_player + 1, "playing with", PLAYERS[actual_player], "has won.")
+                print("PLAYER ", ACTUAL_PLAYER + 1, "playing with", PLAYERS[ACTUAL_PLAYER], "has won.")
 
             break
 
-        actual_player += 1
-        actual_player %= 2
+        nextplayer()
 
 
 # ------------------- #

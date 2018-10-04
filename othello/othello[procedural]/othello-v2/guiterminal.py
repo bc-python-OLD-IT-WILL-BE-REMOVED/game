@@ -8,7 +8,10 @@ from logic import *
 # -- CONSTANTS -- #
 # --------------- #
 
-PAUSE = 0
+# Useful
+#     * 0   : steps controlled by pressing on ENTER.
+#     * < 0 : no steps shown except when a human plays.
+PAUSE = 0#.35
 
 GREEN, WHITE, BLACK = "green", "white", "black"
 
@@ -86,7 +89,12 @@ def choosecoords():
 
 
 def sleepgame():
-    if PAUSE == 0:
+    global PAUSE
+
+    if PAUSE < 0:
+        ...
+
+    elif PAUSE == 0:
         input("Presser entrée pour continuer...")
 
     else:
@@ -94,7 +102,7 @@ def sleepgame():
 
 
 def playthegame():
-    global PLAYERS_INTERACT, PAUSE, \
+    global THE_PLAYERS_INTERACT, PAUSE, \
            GAME_STATE, PLAYER_ID, TOKENS_PLAYABLE_BY_USER, USER_1, USER_2
 
 # Does the game is finished ?
@@ -113,30 +121,31 @@ def playthegame():
 
     else:
 # Does the actual player have done a playable choice ?
-        if PLAYERS_INTERACT[player_id]:
+        if THE_PLAYERS_INTERACT[player_id]:
             rownb, colnb = choosecoords()
 
         else:
             rownb, colnb = None, None
 
         newtokens = tokenschanged(
-            PLAYERS[player_id](
+            THE_PLAYERS[player_id](
                 row = rownb,
                 col = colnb
             )
         )
 
-        if PAUSE == 0 and not PLAYERS_INTERACT[player_id]:
+# Just for human(?) debugging...  -  START
+        print("playthegame :: newtokens :", newtokens)
+        print("               TOKENS_PLAYABLE_BY_USER : ", GAME_STATE[TOKENS_PLAYABLE_BY_USER][GAME_STATE[PLAYER_ID]])
+# Just for human(?) debugging...  -  END
+
+        if PAUSE == 0 and not THE_PLAYERS_INTERACT[player_id]:
             sleepgame()
 
         if newtokens:
-            for (row, col) in newtokens:
-                GAME_STATE[PLAYING_GRID][row][col] = player_id
-
-            GAME_STATE[PLAYER_ID] = otheruser(player_id)
+            updatetokens(newtokens)
 
             redrawgrid()
-            findplayable()
 
 # Does the game is finished ?
             closethegameornot()
@@ -172,9 +181,10 @@ def redrawgrid():
            GRID_SIZE, PLAYING_GRID
 
 # Let's clear the terminal.
-    print("\033c\033[97m")
+    # print("\033c\033[97m")
+    print("\n ==="*3)
 
-    print(UPGRIDLINE)
+    print(UPDOWNGRIDLINE)
 
     for rownb in range(GAME_STATE[GRID_SIZE]):
         rowinfo = str(rownb + 1)
@@ -187,7 +197,7 @@ def redrawgrid():
 
         print(" |", rowinfo)
 
-    print(UPGRIDLINE)
+    print(UPDOWNGRIDLINE)
 
     print(
         'Othello - ' + COLORS[GAME_STATE[PLAYER_ID]] + ' joue.'
@@ -195,18 +205,18 @@ def redrawgrid():
 
 
 def launchgui():
-    global COLORS, UPGRIDLINE, NB_DIGITSINFOS, COLNAMES, \
+    global COLORS, UPDOWNGRIDLINE, NB_DIGITSINFOS, COLNAMES, \
            GAME_STATE, \
-           GRID_SIZE, PLAYERS, PLAYERS_INTERACT
+           GRID_SIZE, THE_PLAYERS, THE_PLAYERS_INTERACT
 
 # Which kind of players we have ?
-    PLAYERS = [
+    THE_PLAYERS = [
         GAME_STATE[PLAYERS][ GAME_STATE[PLAYERS_MODES][i] ]
         for i in range(2)
     ]
 
 # Do we have to ask the player to give coordinates ?
-    PLAYERS_INTERACT = [
+    THE_PLAYERS_INTERACT = [
         bool(0 == GAME_STATE[PLAYERS_MODES][i])
         for i in range(2)
     ]
@@ -218,7 +228,7 @@ def launchgui():
         for i in range(GAME_STATE[GRID_SIZE])
     ]
 
-    UPGRIDLINE = " " * (NB_DIGITSINFOS + 2) \
+    UPDOWNGRIDLINE = " " * (NB_DIGITSINFOS + 2) \
         + "-" \
         + "".join([
             "-{0}-".format(letter)

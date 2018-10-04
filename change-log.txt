@@ -1,0 +1,1 @@
+Each game project has its own change log.

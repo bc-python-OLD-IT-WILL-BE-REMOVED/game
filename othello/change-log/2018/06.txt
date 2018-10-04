@@ -1,0 +1,5 @@
+==========
+2018-06-23
+==========
+
+Bêta version : one single ¨python file allows to "play alone" using ¨tkinter gor the ¨gui. For the moment, the script is not totally functional...

@@ -95,19 +95,11 @@ def leftclick(event):
         )
 
         if newtokens:
-            for (row, col) in newtokens:
-                changecolor(
-                    tokenid = TOKENS_TK_IDS[row][col],
-                    color   = COLORS[player_id]
-                )
-
-            GAME_STATE[PLAYER_ID] = otheruser(player_id)
+            updatetokens(newtokens)
 
             MAIN_WINDOW.title(
                 'Othello - ' + COLORS[GAME_STATE[PLAYER_ID]] + ' joue.'
             )
-
-            findplayable()
 
 # Does the game is finished ?
             closethegameornot()

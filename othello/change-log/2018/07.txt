@@ -1,0 +1,5 @@
+==========
+2018-07-02
+==========
+
+Version 1: the "play alone" mode is fully functional and has been implemented in a single ¨python file.

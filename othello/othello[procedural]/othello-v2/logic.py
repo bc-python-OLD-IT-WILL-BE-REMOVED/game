@@ -1,4 +1,5 @@
 from collections import defaultdict
+from copy import deepcopy
 from random import choice
 
 from settings import *
@@ -12,8 +13,8 @@ def thisistheendmyoldfriend():
     """
 This function simply indicates if the game is finished or not.
     """
-    global USER_1, USER_2, GAME_STATE, \
-           TOKENS_PLAYABLE_BY_USER
+    global USER_1, USER_2, \
+           GAME_STATE, TOKENS_PLAYABLE_BY_USER
 
     return (
         not GAME_STATE[TOKENS_PLAYABLE_BY_USER][USER_1]
@@ -51,8 +52,8 @@ This function adds a new token.
 
 The variables `GAME_STATE[SCORES_BY_USER]` and `GAME_STATE[TOKENS_MAYBE_PLAYABLE]` are updated.
     """
-    global EMPTY, GAME_STATE, \
-           PLAYING_GRID, SCORES_BY_USER, TOKENS_MAYBE_PLAYABLE
+    global EMPTY, \
+           GAME_STATE, PLAYING_GRID, SCORES_BY_USER, TOKENS_MAYBE_PLAYABLE
 
     GAME_STATE[PLAYING_GRID][rownb][colnb] = tokenid
 
@@ -78,8 +79,8 @@ This function only changes a token of one user to a token of the other user.
 
 The variable `GAME_STATE[SCORES_BY_USER]` is updated.
     """
-    global EMPTY, GAME_STATE, \
-           PLAYING_GRID, SCORES_BY_USER
+    global EMPTY, \
+           GAME_STATE, PLAYING_GRID, SCORES_BY_USER
 
     tokenid = GAME_STATE[PLAYING_GRID][rownb][colnb]
 
@@ -98,8 +99,8 @@ def searchonedirection(rowtest, coltest, deltarow, deltacol, tokenid):
     """
 This function looks at consecutive switchable tokens forward one direction.
     """
-    global EMPTY, GAME_STATE, \
-           PLAYING_GRID
+    global EMPTY, \
+           GAME_STATE, PLAYING_GRID
 
     tokensfound = []
 
@@ -123,8 +124,8 @@ def searchalldirections(rowstart, colstart, tokenid):
     """
 This function looks for switchable tokens in all directions.
     """
-    global EMPTY, GAME_STATE, \
-           PLAYING_GRID, TOKENS_MAYBE_PLAYABLE
+    global EMPTY, \
+           GAME_STATE, PLAYING_GRID, TOKENS_MAYBE_PLAYABLE
 
     tokensfound = []
 
@@ -155,8 +156,7 @@ def findplayable():
     """
 We look all empty cells near tokens where each user can play.
     """
-    global GAME_STATE, \
-           TOKENS_MAYBE_PLAYABLE, TOKENS_PLAYABLE_BY_USER
+    global GAME_STATE, TOKENS_MAYBE_PLAYABLE, TOKENS_PLAYABLE_BY_USER
 
     GAME_STATE[TOKENS_PLAYABLE_BY_USER] = {
         USER_1: {},
@@ -173,15 +173,40 @@ We look all empty cells near tokens where each user can play.
 
 # One token can be playable by the two users.
             if tokensfound:
-                GAME_STATE[TOKENS_PLAYABLE_BY_USER][tokenid][(row, col)] = tokensfound
+                GAME_STATE[TOKENS_PLAYABLE_BY_USER][tokenid][(row, col)] \
+                = tokensfound
+
+
+def updatetokens(newtokens):
+    """
+This function simply changes all the tokens indicated in the list `newtokens`,
+and then it changes the ID of the player.
+    """
+    global GAME_STATE, PLAYING_GRID, PLAYER_ID
+
+# Just for human(?) debugging...  -  START
+    print("updatetokens :: newtokens :", newtokens)
+    print("player_ai_best_three_levels :: grid BEFORE:")
+    for row in GAME_STATE['playing_grid']:
+        print(str(row).replace("None", "."))
+# Just for human(?) debugging...  -  END
+
+    player_id = GAME_STATE[PLAYER_ID]
+
+    for (row, col) in newtokens:
+        GAME_STATE[PLAYING_GRID][row][col] = player_id
+
+    GAME_STATE[PLAYER_ID] = otheruser(player_id)
+
+    findplayable()
 
 
 def resetgrid():
     """
 This function (re)sets the grid in the original organization.
     """
-    global EMPTY, USER_1, USER_2, GAME_STATE, \
-           GRID_SIZE, SCORES_BY_USER, TOKENS_MAYBE_PLAYABLE
+    global EMPTY, USER_1, USER_2, \
+           GAME_STATE, GRID_SIZE, SCORES_BY_USER, TOKENS_MAYBE_PLAYABLE
 
     GAME_STATE[TOKENS_MAYBE_PLAYABLE] = set()
 
@@ -232,11 +257,17 @@ The function returns all the taken changed.
 
     tokenfound = []
 
-    if coords in GAME_STATE[TOKENS_PLAYABLE_BY_USER][GAME_STATE[PLAYER_ID]]:
+    tokens_playable = GAME_STATE[TOKENS_PLAYABLE_BY_USER][GAME_STATE[PLAYER_ID]]
+
+# Just for human(?) debugging...  -  START
+    print("playthegame :: TOKENS_PLAYABLE_BY_USER : ", GAME_STATE[TOKENS_PLAYABLE_BY_USER][GAME_STATE[PLAYER_ID]])
+# Just for human(?) debugging...  -  END
+
+    if coords in tokens_playable:
         tokenfound.append(coords)
         addtoken(row, col, GAME_STATE[PLAYER_ID])
 
-        for (row, col) in GAME_STATE[TOKENS_PLAYABLE_BY_USER][GAME_STATE[PLAYER_ID]][coords]:
+        for (row, col) in tokens_playable[coords]:
             tokenfound.append( (row, col) )
             switchtoken(row, col)
 
@@ -274,6 +305,12 @@ of playable cells.
     """
     global GAME_STATE, PLAYER_ID, TOKENS_PLAYABLE_BY_USER
 
+# Just for human(?) debugging...  -  START
+    # print("grid:")
+    # for row in GAME_STATE['playing_grid']:
+    #     print(str(row).replace("None", "."))
+# Just for human(?) debugging...  -  END
+
     return choice(
         list(
             GAME_STATE[TOKENS_PLAYABLE_BY_USER][GAME_STATE[PLAYER_ID]].keys()
@@ -288,26 +325,20 @@ GAME_STATE[PLAYERS].append(player_sai)
 # -- PLAYER 3 : AI - BEST JUST AT THIS TIME -- #
 # -------------------------------------------- #
 
-def bestchoicenow():
+def findbestcoords(cells_scores):
     """
-See the functions `player_ai_best_one_level` and `findbestchoicesdeeply`.
+????
     """
-    global GAME_STATE, PLAYER_ID, TOKENS_PLAYABLE_BY_USER
+    bestscore  = -1
+    bestcoords = defaultdict(list)
 
-    maxchanged = 0
-    tochoose   = defaultdict(list)
+    for coords, score in cells_scores.items():
+        if score >= bestscore:
+            bestscore = score
 
-    for new, changed in GAME_STATE[TOKENS_PLAYABLE_BY_USER][
-        GAME_STATE[PLAYER_ID]
-    ].items():
-        nbchanged = len(changed)
+            bestcoords[score].append(coords)
 
-        if nbchanged >= maxchanged:
-            maxchanged = nbchanged
-
-            tochoose[nbchanged].append(new)
-
-    return maxchanged, tochoose[maxchanged]
+    return bestscore, bestcoords[bestscore]
 
 
 def player_ai_best_one_level(row, col):
@@ -322,25 +353,23 @@ This function uses is the following one.
 
     * We choose randomly one token in the previous list and we return its
       coordinates.
-
-
-Indeed the first job is done by the function `bestchoicenow`.
-
-
-info::
-    This function prepares the job for the more general function
-    `player_ai_best_three_levels` above.
-    In other word we could have just write one single function for
-    `player_ai_best_one_level` and `player_ai_best_three_levels`
-    (this is a very easy exercise).
     """
-    maxchanged, tochoose = bestchoicenow()
+    global GAME_STATE, PLAYER_ID, TOKENS_PLAYABLE_BY_USER
+
+    bestscore, coordstochoose = findbestcoords(
+        cells_scores = {
+            new: len(changed)
+            for new, changed in GAME_STATE[TOKENS_PLAYABLE_BY_USER][
+                GAME_STATE[PLAYER_ID]
+            ].items()
+        }
+    )
 
     print()
     print("BEST FOUND - ai_best_one_level")
-    print(maxchanged, "tokens at", tochoose)
+    print(bestscore, "tokens at", coordstochoose)
 
-    return choice(tochoose)
+    return choice(coordstochoose)
 
 
 GAME_STATE[PLAYERS].append(player_ai_best_one_level)
@@ -350,28 +379,63 @@ GAME_STATE[PLAYERS].append(player_ai_best_one_level)
 # -- PLAYER 4 : AI - MOST TOKENS ON 3 TURNS -- #
 # -------------------------------------------- #
 
-def findbestchoicesdeeply(level):
+def recusearchforscores(level, initial_player_id):
     """
-This function implements the method for the AI programmed in the function
+This function implements the method for the AI corresponding to the function
 `player_ai_best_three_levels`.
+
+
+warning::
+    We must have `level > 0` the first time the funcion is called.
     """
     global GAME_STATE, PLAYER_ID, TOKENS_PLAYABLE_BY_USER
 
-    maxchanged, totry = bestchoicenow()
+# Just for human(?) debugging...  -  START
+    # print("level =", level, "grid:")
+    # for row in GAME_STATE['playing_grid']:
+    #     print(str(row).replace("None", "."))
+# Just for human(?) debugging...  -  END
 
-    for coords in totry:
-        print(coords)
-
-    exit()
-
-# Let's continue recursively... or not !
-    level -= 1
-
+# We just return the current scores.
     if level == 0:
-        return totry
+        scores = {
+            None: GAME_STATE[SCORES_BY_USER][initial_player_id]
+        }
 
+# Let's try all and investigate recursively...
     else:
-        findbestchoicesdeeply(level = level)
+        player_id   = GAME_STATE[PLAYER_ID]
+        the_players = GAME_STATE[PLAYERS]
+
+        scores = {}
+
+        for (row, col) in GAME_STATE[TOKENS_PLAYABLE_BY_USER][player_id]:
+# We must store actual GAME_STATE so as to restore it just after the job
+# will been done recursively.
+            lastgamestate = deepcopy(GAME_STATE)
+
+            updatetokens(
+                newtokens = tokenschanged(
+                    the_players[player_id](
+                        row = row,
+                        col = col
+                    )
+                )
+            )
+
+            bestscore, _ = findbestcoords(
+                cells_scores = recusearchforscores(
+                    level             = level - 1,
+                    initial_player_id = initial_player_id
+                )
+            )
+
+            scores[(row, col)] = bestscore
+
+            GAME_STATE = deepcopy(lastgamestate)
+
+# Scores calculated.
+    return scores
 
 
 def player_ai_best_three_levels(row, col):
@@ -382,26 +446,60 @@ This is just a way to seet the AI plays when the user clicks on the game.
 
 This function uses is the following one.
 
-    * We build a list of the tokens given most new tokens of our color if
-      we simulate all the possibilities on three levels of the game. We have
-      to take care of cases with two first moves not really interesting at
-      a first glance but then very good with the third choice...
+    * We build a list of the tokens with their score. This score is calculated
+      by taking the most tokens won after three turns
+      ((
+        We could also have evaluted means, or works with the best and the worst
+        numbers of tokens won... There are ither choices possible.
+      )).
+
+    * We build a list of the tokens with the best score.
 
     * We choose randomly one token in the previous list and we return its
       coordinates.
 
 
-Indeed the job is done by the recursive function `findbestchoicesdeeply`
-(this allows to imagine depper search as soon as your computer can do
-the search...).
+This tactic tries to take care of cases with two first moves not very
+interesting at a first glance but that are very useful with a good third
+choice...
+
+
+info::
+    Most of the job is done by the recursive function `recusearchforscores`
+    (this allows to imagine depper search as long as your computer can seek).
     """
-    bestchoices = findbestchoicesdeeply(level = 3)
+    global GAME_STATE, PLAYER_ID
 
+    print("player_ai_best_three_levels :: id BEFORE -", GAME_STATE[PLAYER_ID])
+# Just for human(?) debugging...  -  START
+    print("player_ai_best_three_levels :: grid BEFORE:")
+    for row in GAME_STATE['playing_grid']:
+        print(str(row).replace("None", "."))
+# Just for human(?) debugging...  -  END
+
+    lastgamestate = deepcopy(GAME_STATE)
+
+    bestscore, coordstochoose = findbestcoords(
+        cells_scores = recusearchforscores(
+            level             = 3,
+            initial_player_id = GAME_STATE[PLAYER_ID]
+        )
+    )
+
+    GAME_STATE = deepcopy(lastgamestate)
+
+    print("player_ai_best_three_levels :: id AFTER -", GAME_STATE[PLAYER_ID])
+# Just for human(?) debugging...  -  START
+    print("player_ai_best_three_levels :: grid AFTER:")
+    for row in GAME_STATE['playing_grid']:
+        print(str(row).replace("None", "."))
+# Just for human(?) debugging...  -  END
     print()
-    print("BEST FOUND - player_ai_best_three_levels")
-    print(bestchoices)
+    print("BEST FOUND - player_ai_best_three_levels", choice(coordstochoose))
+    print(bestscore, "tokens at", coordstochoose)
+    print("?", choice(coordstochoose))
 
-    return choice(bestchoices)
+    return choice(coordstochoose)
 
 
 GAME_STATE[PLAYERS].append(player_ai_best_three_levels)

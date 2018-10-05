@@ -1,5 +1,14 @@
 ==========
+2018-10-????
+==========
+
+Version 2: this version uses a new data model that eases the testing in ``game_state``.
+
+Version 3: this version uses ``tkinter``.
+
+
+==========
 2018-10-04
 ==========
 
-Version 1 in a terminal: the "play alone" mode is fully functional and has been implemented in a single ¨python file.
+Version 1: the "play alone" mode is fully functional and has been implemented in a single ¨python file.

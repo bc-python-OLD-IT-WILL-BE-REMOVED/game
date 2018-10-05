@@ -1,13 +1,36 @@
-# ----------------------- #
-# -- GENERAL CONSTANTS -- #
-# ----------------------- #
+# --------------- #
+# -- CONSTANTS -- #
+# --------------- #
 
-CROSS, DISK, EMPTY = "×", "o", " "
+CROSS, EMPTY, DISK = range(-1, 2)
 
 PLAYERS       = [CROSS, DISK]
 ACTUAL_PLAYER = 0
 
 GRID = None
+
+COORDS_TO_TEST = []
+
+for nb in range(3):
+    COORDS_TO_TEST.append([
+        (nb, col)
+        for col in range(3)
+    ])
+
+    COORDS_TO_TEST.append([
+        (col, nb)
+        for col in range(3)
+    ])
+
+COORDS_TO_TEST.append([
+    (nb, nb)
+    for nb in range(3)
+])
+
+COORDS_TO_TEST.append([
+    (2 - nb, nb)
+    for nb in range(3)
+])
 
 
 # ------------------- #
@@ -15,6 +38,12 @@ GRID = None
 # ------------------- #
 
 HRULE = "-"*(3*3 + 2)
+
+SYMBOLS = {
+    CROSS: "×",
+    DISK : "o",
+    EMPTY: " "
+}
 
 
 # ----------------------- #
@@ -33,86 +62,42 @@ def reset_game():
 
     ACTUAL_PLAYER = 0
 
-    GRID = [
-        [EMPTY for _ in range(3)]
-        for _ in range(3)
-    ]
+    GRID = {
+        (row, col): EMPTY
+        for row in range(3)
+        for col in range(3)
+    }
 
 
 def cell_can_be_played(row, col):
     global GRID, EMPTY
 
-    return GRID[row][col] == EMPTY
+    return GRID[row, col] == EMPTY
 
 
 def addtoken(row, col, token):
     global GRID
 
-    GRID[row][col] = token
-
-
-def single_token_found(tokens):
-    singletoken = None
-
-    if len(tokens) == 1:
-        singletoken = list(tokens)[0]
-
-    return singletoken
+    GRID[row, col] = token
 
 
 def game_state():
-    global GRID, PLAYERS
+    global GRID, PLAYERS, COORDS_TO_TEST
 
 # A winner ?
-    for nb in range(3):
-# Vertical test.
-        oneline_tokens = set([
-            GRID[nb][cell]
-            for cell in range(3)
+    for onetest in COORDS_TO_TEST:
+        total = sum([
+            GRID[row, col]
+            for (row, col) in onetest
         ])
 
-        singletoken = single_token_found(oneline_tokens)
-
-        if singletoken in PLAYERS:
-            return True, singletoken
-
-# Horizontal test.
-        oneline_tokens = set([
-            GRID[cell][nb]
-            for cell in range(3)
-        ])
-
-        singletoken = single_token_found(oneline_tokens)
-
-        if singletoken in PLAYERS:
-            return True, singletoken
-
-# Diagonal LU-2-RD test.
-    oneline_tokens = set([
-        GRID[nb][nb]
-        for nb in range(3)
-    ])
-
-    singletoken = single_token_found(oneline_tokens)
-
-    if singletoken in PLAYERS:
-        return True, singletoken
-
-# Diagonal LD-2-RU test.
-    oneline_tokens = set([
-        GRID[2 - nb][nb]
-        for nb in range(3)
-    ])
-
-    singletoken = single_token_found(oneline_tokens)
-
-    if singletoken in PLAYERS:
-        return True, singletoken
+        if abs(total) == 3:
+            return True, total // 3
 
 # No more choice ?
     for row in range(3):
         for col in range(3):
-            if GRID[row][col] != EMPTY:
+            if GRID[row, col] != EMPTY:
                 return False, None
 
     return True, None
@@ -122,17 +107,24 @@ def game_state():
 # -- TUI -- #
 # --------- #
 
-def printgrid():
-    global GRID, HRULE
+def update_grid_drawn():
+    global GRID, HRULE, SYMBOLS
 
     for row in range(3):
-        print(" " + " | ".join(GRID[row]) + " ")
+        for col in range(3):
+            print(" " + SYMBOLS[GRID[row, col]], end = "")
+            if col != 2:
+                print(" |", end = "")
+
+        print()
 
         if row != 2:
             print(HRULE)
 
 
 def validate_answer(answer):
+    global GRID
+
     badanswer = (True, None, None)
 
     answer = answer.split(",")
@@ -154,23 +146,23 @@ def validate_answer(answer):
         return badanswer
 
     if not cell_can_be_played(row, col):
-        print("Cell contains a", GRID[row][col], "token...")
+        print("Cell contains a", GRID[row, col], "token...")
         return badanswer
 
     return False, row, col
 
 
 def main():
-    global PLAYERS, ACTUAL_PLAYER
+    global PLAYERS, ACTUAL_PLAYER, SYMBOLS
 
     reset_game()
 
     print()
-    printgrid()
+    update_grid_drawn()
 
     while True:
         print()
-        print("PLAYER ", ACTUAL_PLAYER + 1, "plays with", PLAYERS[ACTUAL_PLAYER])
+        print("PLAYER", ACTUAL_PLAYER + 1, "plays with", SYMBOLS[PLAYERS[ACTUAL_PLAYER]])
 
         badanswer = True
 
@@ -180,7 +172,7 @@ def main():
             badanswer, row, col = validate_answer(answer)
 
         addtoken(row, col, PLAYERS[ACTUAL_PLAYER])
-        printgrid()
+        update_grid_drawn()
 
         endofgame, winningtoken = game_state()
 
@@ -189,7 +181,7 @@ def main():
                 print("No one wins...")
 
             else:
-                print("PLAYER ", ACTUAL_PLAYER + 1, "playing with", PLAYERS[ACTUAL_PLAYER], "has won.")
+                print("PLAYER", ACTUAL_PLAYER + 1, "playing with", SYMBOLS[PLAYERS[ACTUAL_PLAYER]], "has won.")
 
             break
 

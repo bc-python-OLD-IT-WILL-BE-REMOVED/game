@@ -2,7 +2,9 @@
 TODO
 ====
 
-idée : implémenter différentes version de tetris
-    ---> python
-    ---> en js
-    ---> GeoGebra ? faisable ?
+---
+
+simplifier gamestate de version 2 , faire version 2 - 1 en ajoutant une variable qui lors de l'ajout d'un token calcul la somme des lignes qui nous intéressent
+    ---> pas indispensable c'est plsu anecdotique
+
+---

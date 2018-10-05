@@ -1,14 +1,18 @@
 ==========
-2018-10-????
+2018-10-05
 ==========
 
 Version 2: this version uses a new data model that eases the testing in ``game_state``.
 
-Version 3: this version uses ``tkinter``.
+
+Version 3: this version uses ``tkinter`` for the GUI.
+
+
+Bug: detection of equality implemented in ``game_state`` uses a wrong logic (this was not tested before the GUI version !).
 
 
 ==========
 2018-10-04
 ==========
 
-Version 1: the "play alone" mode is fully functional and has been implemented in a single ¨python file.
+Version 1: the "play alone" mode should be fully functional and it has been implemented in a single ¨python file.

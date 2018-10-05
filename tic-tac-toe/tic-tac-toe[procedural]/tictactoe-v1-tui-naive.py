@@ -112,9 +112,10 @@ def game_state():
 # No more choice ?
     for row in range(3):
         for col in range(3):
-            if GRID[row][col] != EMPTY:
+            if GRID[row, col] == EMPTY:
                 return False, None
 
+# No more choice
     return True, None
 
 

@@ -1,4 +1,14 @@
 ==========
+2018-10-08
+==========
+
+Horror version : for pedagogical reason, one version without any iterable or function has been build using a little of black magic.
+
+
+Bug: the function `nextplayer` was bad implemented in versions 2 and 3.
+
+
+==========
 2018-10-05
 ==========
 
@@ -8,7 +18,7 @@ Version 2: this version uses a new data model that eases the testing in ``game_s
 Version 3: this version uses ``tkinter`` for the GUI.
 
 
-Bug: detection of equality implemented in ``game_state`` uses a wrong logic (this was not tested before the GUI version !).
+Bug: wrong implementation of the detection of equality in the function ``game_state`` (this was not tested before the GUI version !).
 
 
 ==========

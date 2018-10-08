@@ -43,8 +43,7 @@ COORDS_TO_TEST.append([
 def nextplayer():
     global ACTUAL_PLAYER
 
-    ACTUAL_PLAYER += 1
-    ACTUAL_PLAYER %= 2
+    ACTUAL_PLAYER = -ACTUAL_PLAYER
 
 
 def reset_game():

@@ -53,7 +53,8 @@ SYMBOLS = {
 def nextplayer():
     global ACTUAL_PLAYER
 
-    ACTUAL_PLAYER = -ACTUAL_PLAYER
+    ACTUAL_PLAYER += 1
+    ACTUAL_PLAYER %= 2
 
 
 def reset_game():

@@ -1,11 +1,21 @@
 ==========
+2018-10-09
+==========
+
+Version 4: this version simply extends the 3rd one such as to play with more than three columns and rows.
+
+
+Bug: the function `nextplayer` was indeed good implemented at the first time in the versions 2 and 3. The not-a-bug problem came from a confusion between `CROSS, EMPTY, DISK = range(-1, 2)` and `PLAYERS = [CROSS, DISK]`.
+
+
+==========
 2018-10-08
 ==========
 
 Horror version : for pedagogical reason, one version without any iterable or function has been build using a little of black magic.
 
 
-Bug: the function `nextplayer` was bad implemented in versions 2 and 3.
+Bug: the function `nextplayer` was bad implemented in the versions 2 and 3.
 
 
 ==========

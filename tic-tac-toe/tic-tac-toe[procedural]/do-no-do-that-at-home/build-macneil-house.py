@@ -47,7 +47,6 @@ PYCODE += [
 
 PLAYER_ID = - 1
 
-
 #  Columns:       A     B     C
 #  Rows   :  1    .  |  .  |  .
 #               -----------------
@@ -294,7 +293,7 @@ PYCODE.append(
     """
 # The player changes.
         PLAYER_ID = -PLAYER_ID
-    """.strip()
+    """.rstrip()
 )
 
 

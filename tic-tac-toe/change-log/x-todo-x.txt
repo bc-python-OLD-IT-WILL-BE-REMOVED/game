@@ -5,9 +5,13 @@ TODO
 
 ---
 
-simplifier gamestate de version 2 , faire version 2 - 1 en ajoutant une variable qui lors de l'ajout d'un token calcul la somme des lignes qui nous intéressent
-    ---> pas indispensable c'est plsu anecdotique
+version à vbase de regex
 
 ---
 
-passage a lechelle pour les autres version !!!!!
+version css grâce à tictactoe-nolist-nofonction.py
+
+---
+
+simplifier gamestate de version 2 , faire version 2 - 1 en ajoutant une variable qui lors de l'ajout d'un token calcul la somme des lignes qui nous intéressent
+    ---> pas indispensable c'est plsu anecdotique

@@ -1,6 +1,25 @@
 import tkinter
 
 
+# ---------------------- #
+# -- SIZE OF THE GRID -- #
+# ---------------------- #
+
+GRID_SIZE = None
+
+while GRID_SIZE is None:
+    GRID_SIZE = input("Size of the grid (3 is the smaller size): ")
+
+    if not GRID_SIZE.isdigit():
+        GRID_SIZE = None
+
+    else:
+        GRID_SIZE = int(GRID_SIZE)
+
+        if GRID_SIZE < 3:
+            GRID_SIZE = None
+
+
 # --------------- #
 # -- CONSTANTS -- #
 # --------------- #
@@ -14,25 +33,25 @@ GRID = None
 
 COORDS_TO_TEST = []
 
-for nb in range(3):
+for nb in range(GRID_SIZE):
     COORDS_TO_TEST.append([
         (nb, col)
-        for col in range(3)
+        for col in range(GRID_SIZE)
     ])
 
     COORDS_TO_TEST.append([
         (col, nb)
-        for col in range(3)
+        for col in range(GRID_SIZE)
     ])
 
 COORDS_TO_TEST.append([
     (nb, nb)
-    for nb in range(3)
+    for nb in range(GRID_SIZE)
 ])
 
 COORDS_TO_TEST.append([
-    (2 - nb, nb)
-    for nb in range(3)
+    (GRID_SIZE - nb - 1, nb)
+    for nb in range(GRID_SIZE)
 ])
 
 
@@ -54,8 +73,8 @@ def reset_game():
 
     GRID = {
         (row, col): EMPTY
-        for row in range(3)
-        for col in range(3)
+        for row in range(GRID_SIZE)
+        for col in range(GRID_SIZE)
     }
 
 
@@ -81,12 +100,12 @@ def game_state():
             for (row, col) in onetest
         ])
 
-        if abs(total) == 3:
-            return True, total // 3
+        if abs(total) == GRID_SIZE:
+            return True, total // GRID_SIZE
 
 # No more choice ?
-    for row in range(3):
-        for col in range(3):
+    for row in range(GRID_SIZE):
+        for col in range(GRID_SIZE):
             if GRID[row, col] == EMPTY:
                 return False, None
 
@@ -148,14 +167,14 @@ CANVAS.grid(
 )
 
 # Draw the grid once upon the time.
-WIDTH_CELL = XYDIM_CANVAS // 3
+WIDTH_CELL = XYDIM_CANVAS // GRID_SIZE
 
 SHIFT_XY = 5
 DIAMETER = WIDTH_CELL - 2*SHIFT_XY
 
 position   = 1 - WIDTH_CELL
 
-for i in range(1, 4):
+for i in range(1, GRID_SIZE + 1):
     position += WIDTH_CELL
 
     CANVAS.create_line(

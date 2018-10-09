@@ -6,7 +6,6 @@
 
 PLAYER_ID = - 1
 
-
 #  Columns:       A     B     C
 #  Rows   :  1    .  |  .  |  .
 #               -----------------
@@ -32,7 +31,7 @@ CELL_C3 = 0
 while True:
 # Let's print the grid.
     print()
-
+    
     if CELL_A1 == - 1:
         print(" ×", end = "")
     elif CELL_A1 == 1:
@@ -121,17 +120,17 @@ while True:
         print()
         print("Player with [ × ] wins.")
         break
-
+        
     elif (CELL_A1 + CELL_B1 + CELL_C1 - 3) * (CELL_A2 + CELL_B2 + CELL_C2 - 3) * (CELL_A3 + CELL_B3 + CELL_C3 - 3) * (CELL_A1 + CELL_A2 + CELL_A3 - 3) * (CELL_B1 + CELL_B2 + CELL_B3 - 3) * (CELL_C1 + CELL_C2 + CELL_C3 - 3) * (CELL_A1 + CELL_B2 + CELL_C3 - 3) * (CELL_A3 + CELL_B2 + CELL_C1 - 3) == 0:
         print()
         print("Player with [ o ] wins.")
         break
-
+        
     elif CELL_A1 * CELL_A2 * CELL_A3 * CELL_B1 * CELL_B2 * CELL_B3 * CELL_C1 * CELL_C2 * CELL_C3 != 0:
         print()
         print("No one wins.")
         break
-
+    
 # We can play...",
     else:
         print()
@@ -180,5 +179,6 @@ while True:
             elif choice == "C3" and CELL_C3 == 0:
                 CELL_C3 = PLAYER_ID
                 bad_answer = False
+
 # The player changes.
         PLAYER_ID = -PLAYER_ID

@@ -1,5 +1,0 @@
-==========
-2018-08-??????
-==========
-
-Version 2: use and management of IAs and split the code in several different ¨python files.

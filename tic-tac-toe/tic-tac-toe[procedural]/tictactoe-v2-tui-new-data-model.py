@@ -9,6 +9,11 @@ ACTUAL_PLAYER = 0
 
 GRID = None
 
+
+# --------------- #
+# -- FOR TESTS -- #
+# --------------- #
+
 COORDS_TO_TEST = []
 
 for nb in range(3):

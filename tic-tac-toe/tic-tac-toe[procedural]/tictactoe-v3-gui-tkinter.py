@@ -12,27 +12,32 @@ ACTUAL_PLAYER = 0
 
 GRID = None
 
+
+# --------------- #
+# -- FOR TESTS -- #
+# --------------- #
+
 COORDS_TO_TEST = []
 
-for nb in range(3):
+for row in range(3):
     COORDS_TO_TEST.append([
-        (nb, col)
+        (row, col)
         for col in range(3)
     ])
 
     COORDS_TO_TEST.append([
-        (col, nb)
+        (col, row)
         for col in range(3)
     ])
 
 COORDS_TO_TEST.append([
-    (nb, nb)
-    for nb in range(3)
+    (row, row)
+    for row in range(3)
 ])
 
 COORDS_TO_TEST.append([
-    (2 - nb, nb)
-    for nb in range(3)
+    (2 - row, row)
+    for row in range(3)
 ])
 
 
@@ -228,7 +233,7 @@ def leftclick(event):
                 title = "No one wins..."
 
             else:
-                title = "PLAYER " + str(ACTUAL_PLAYER + 1) + "playing with" \
+                title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
                       + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
 
             MAIN_WINDOW.title(title + " [SEE YOUR TERMINAL]")

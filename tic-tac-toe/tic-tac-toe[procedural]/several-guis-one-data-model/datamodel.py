@@ -5,7 +5,7 @@
 GRID_SIZE = None
 
 while GRID_SIZE is None:
-    GRID_SIZE = input("Size of the grid (3 is the smaller size): ")
+    GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
 
     if not GRID_SIZE.isdigit():
         GRID_SIZE = None
@@ -13,7 +13,7 @@ while GRID_SIZE is None:
     else:
         GRID_SIZE = int(GRID_SIZE)
 
-        if GRID_SIZE < 3:
+        if not 3 <= GRID_SIZE <= 20:
             GRID_SIZE = None
 
 
@@ -35,25 +35,25 @@ GRID = None
 
 COORDS_TO_TEST = []
 
-for nb in range(GRID_SIZE):
+for row in range(GRID_SIZE):
     COORDS_TO_TEST.append([
-        (nb, col)
+        (row, col)
         for col in range(GRID_SIZE)
     ])
 
     COORDS_TO_TEST.append([
-        (col, nb)
+        (col, row)
         for col in range(GRID_SIZE)
     ])
 
 COORDS_TO_TEST.append([
-    (nb, nb)
-    for nb in range(GRID_SIZE)
+    (row, row)
+    for row in range(GRID_SIZE)
 ])
 
 COORDS_TO_TEST.append([
-    (GRID_SIZE - nb - 1, nb)
-    for nb in range(GRID_SIZE)
+    (GRID_SIZE - row - 1, row)
+    for row in range(GRID_SIZE)
 ])
 
 

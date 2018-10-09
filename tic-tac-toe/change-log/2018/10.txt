@@ -5,7 +5,7 @@
 Version 4: this version simply extends the 3rd one such as to play with more than three columns and rows.
 
 
-Version 4 bis: this version tests the new development using a module. Our data model will not change in our next examples, so we can use a module `datamodel.py` which is only concerns with the management of the datas. This implies to stop the use of global variables inside `datamodel.py`.
+Version 4 bis: this version tests the new development using a module. Our data model will be stored in a module. Our last model has been stored inside `natural_model.py`.
 
 
 More strict use of `global` : no more names forgotten with `global ...`.

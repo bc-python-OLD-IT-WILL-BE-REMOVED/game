@@ -5,7 +5,7 @@
 Version 4: this version simply extends the 3rd one such as to play with more than three columns and rows.
 
 
-Using modules: the new incoming versions inside the folder path::``one-gui-for-several-data-models`` will use a module for the data model. For the moment we have just one ¨tkinter GUI and one model whic is our last one (see `natural_model.py`).
+One module for several ¨guis: inside the folder path::``several-guis-one-data-model``, we will use a module for the data model (see `natural_model.py`). For the moment we have just one ¨tkinter GUI.
 
 
 More strict use of `global` : no more names forgotten with `global ...`.

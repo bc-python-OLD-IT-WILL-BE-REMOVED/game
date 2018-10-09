@@ -61,7 +61,7 @@ def single_token_found(tokens):
 
 
 def game_state():
-    global GRID, PLAYERS
+    global GRID, PLAYERS, EMPTY
 
 # A winner ?
     for nb in range(3):

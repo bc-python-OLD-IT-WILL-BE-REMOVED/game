@@ -10,6 +10,7 @@ Version 4 bis: this version tests the new development using a module. Our data m
 
 More strict use of `global` : no more names forgotten with `global ...`.
 
+
 Bug: the function `nextplayer` was indeed good implemented at the first time in the versions 2 and 3. The not-a-bug problem came from a confusion between `CROSS, EMPTY, DISK = range(-1, 2)` and `PLAYERS = [CROSS, DISK]`.
 
 

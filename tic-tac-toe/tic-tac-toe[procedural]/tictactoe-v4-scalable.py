@@ -91,7 +91,7 @@ def addtoken(row, col, token):
 
 
 def game_state():
-    global GRID, COORDS_TO_TEST
+    global GRID, GRID_SIZE, EMPTY, COORDS_TO_TEST
 
 # A winner ?
     for onetest in COORDS_TO_TEST:
@@ -231,7 +231,7 @@ def drawtoken(row, col, token):
 
 def leftclick(event):
     global PLAYERS, ACTUAL_PLAYER, \
-           MAIN_WINDOW, SYMBOLS
+           MAIN_WINDOW, WIDTH_CELL, SYMBOLS
 
     row = event.y // WIDTH_CELL
     col = event.x // WIDTH_CELL
@@ -271,7 +271,8 @@ CANVAS.bind(
 
 
 def main():
-    global MAIN_WINDOW
+    global PLAYERS, ACTUAL_PLAYER, \
+           MAIN_WINDOW, SYMBOLS
 
     reset_game()
 

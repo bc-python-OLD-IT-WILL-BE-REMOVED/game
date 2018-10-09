@@ -82,7 +82,7 @@ def addtoken(row, col, token):
 
 
 def game_state():
-    global GRID, COORDS_TO_TEST
+    global GRID, EMPTY, COORDS_TO_TEST
 
 # A winner ?
     for onetest in COORDS_TO_TEST:

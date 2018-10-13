@@ -46,11 +46,11 @@ PYCODE = PYCODE.replace(
 PYCODE = PYCODE.replace("PLAYER_ID", "x")
 
 PYCODE = PYCODE.replace(
-    "x = - 1",
+    "x = -1",
     """
-x = - 1
+x = -1
 
-# Some useful  texts.
+# Some useful texts. We use UNICODE codification because any programer knows it.
 
 {declarations}
 
@@ -147,7 +147,6 @@ while(match):
             end   = PYCODE[match.end():]
         )
 
-
 # ---------------------- #
 # -- CRYPTIC MESSAGES -- #
 # ---------------------- #
@@ -155,7 +154,7 @@ while(match):
 old_messages = [
     '"  "',
     '" |"',
-    "'-'*11",
+    '"-"*11',
     '" ×"',
     '" o"',
     '"Player with [ × ] wins."',
@@ -172,10 +171,25 @@ for i, old_text in enumerate(old_messages):
 
     PYCODE = PYCODE.replace(old_text, new_var)
 
+    if "*" in old_text:
+        text, nb = old_text.split("*")
+
+    else:
+        text, nb = old_text, None
+
+    text = text[1: -1]
+    text = '"' + "".join(
+        '\\u%04x' % ord(c) for c in text
+    ) + '"'
+
+    if nb is not None:
+        text += '*' + nb
+
+
     declarations.append(
         "{name} = {text}".format(
             name = new_var,
-            text = old_text
+            text = text
         )
     )
 
@@ -196,6 +210,130 @@ for old_name, new_name in {
     "choice"    : "k"
 }.items():
     PYCODE = PYCODE.replace(old_name, new_name)
+
+
+# -------------------------------------------------- #
+# -- ONE LINERS FOR ``IF ... ELIF ... ELSE ...``  -- #
+# -------------------------------------------------- #
+
+pattern = re.compile(
+    'if ([a-i] == -1):\s+(_ononl_\(t[0-9]\))\s+'
+    +
+    'elif ([a-i] == 1):\s+(_ononl_\(t[0-9]\))\s+'
+    +
+    'else:\s+(_ononl_\(t[0-9]\))'
+)
+
+match = True
+
+while(match):
+    match = re.search(pattern, PYCODE)
+
+    if match:
+        onlinetest = "{0} if {1} else {2} if {3} else {4}".format(
+            match.group(2),
+            match.group(1),
+            match.group(4),
+            match.group(3),
+            match.group(5),
+        )
+
+        PYCODE = "{start}{text}{end}".format(
+            start = PYCODE[:match.start()],
+            text  = onlinetest,
+            end   = PYCODE[match.end():]
+        )
+
+
+# ---------------------------------------------- #
+# -- ONE LINERS FOR SOME ``IF ... ELSE ...``  -- #
+# ---------------------------------------------- #
+
+pattern = re.compile(
+    'if x == 1:\s+k = (.*)\s+'
+    +
+    'else:\s+k = (.*)'
+)
+
+match = True
+
+while(match):
+    match = re.search(pattern, PYCODE)
+
+    if match:
+        onlinetest = "k = {0} if x == 1 else {1}".format(
+            match.group(1),
+            match.group(2),
+        )
+
+        PYCODE = "{start}{text}{end}".format(
+            start = PYCODE[:match.start()],
+            text  = onlinetest,
+            end   = PYCODE[match.end():]
+        )
+
+
+# ------------------------------------------------------------------ #
+# -- ONE LINERS FOR THE VERY LAST ``IF ... ELIF ... ELIF ...``  -- #
+# ------------------------------------------------------------------ #
+
+pattern = re.compile(
+    '(el)*if (k == .*):\s+(.*)\s+(.*)\s+'
+)
+
+match = True
+start = None
+
+ifstatements = []
+
+while(match):
+    match = re.search(pattern, PYCODE)
+
+    if match:
+        if start is None:
+            start = PYCODE[:match.start()]
+
+        names  = []
+        values = []
+
+        for i in range(3, 5):
+            var, val = [x.strip() for x in match.group(i).split("=")]
+
+            names.append(var)
+            values.append(val)
+
+        definition = '("{0}", "{1}")'.format(
+            names[0],
+            names[1],
+            values[0],
+            values[1],
+        )
+
+        ifstatements.append((
+            match.group(2), definition
+        ))
+
+        PYCODE = PYCODE[match.end():]
+
+
+onelineif = ""
+
+for test, varstochange in ifstatements:
+    onelineif += "{0} if ({1}) else ".format(
+        varstochange,
+        test
+    )
+
+onelineif = """
+{tab[2]}nv1, nv2 = {onelineif}BUG
+{tab[2]}vars()[nv1], vars()[nv2] = x, y
+
+""".format(
+    tab       = TAB,
+    onelineif = onelineif
+)
+
+PYCODE = start + onelineif + PYCODE
 
 
 # ------------------------------------ #
@@ -279,6 +417,25 @@ PYCODE = PYCODE.replace(old_test, new_test)
 # --------------------------- #
 
 PYCODE = PYCODE.replace("x = -x", "x = ~x+1")
+
+
+# -------------------------- #
+# -- CLEANING EMPTY LINES -- #
+# -------------------------- #
+
+pattern = re.compile('\n[ \t]*\n')
+
+match = True
+
+while(match):
+    match = re.search(pattern, PYCODE)
+
+    if match:
+        PYCODE = "{start}{text}{end}".format(
+            start = PYCODE[:match.start()],
+            text  = "\n",
+            end   = PYCODE[match.end():]
+        )
 
 
 # ------------------------- #

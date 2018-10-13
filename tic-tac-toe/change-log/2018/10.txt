@@ -2,14 +2,14 @@
 2018-10-13
 ==========
 
-Horror version: for pedagogical reason, we add a version with hard names and tests.
+"Horror" versions: for pedagogical reason, we have added one version with hard names and tests. For example, texts are defined using unicode values.
 
 
 Version in path::``several-guis-one-data-model``: two little enhancements.
 
-    1) ``datamodel``: a better managment of the global variables with mimal numbers of variables for each functions.
+    1) ``datamodel``: a better management of the global variables with minimal numbers of variables for each functions.
 
-    2) ``tictactoe-tkinter``: one new function ``infos`` eases the building of the title, and updating regarding to the changes in ``datamodel``.
+    2) ``tictactoe-tkinter``: one new function ``infos`` simplifies the building of the title, and updatings done regarding to the changes in ``datamodel``.
 
 
 Version 5: two changes.
@@ -58,7 +58,7 @@ Bug: the function ``nextplayer`` was indeed good implemented at the first time i
 2018-10-08
 ==========
 
-Horror version: for pedagogical reason, one version without any iterable or function has been build using a little of black magic.
+"Horror" version: for pedagogical reason, one version without any iterable or function has been build using a little of black magic.
 
 
 Bug: the function ``nextplayer`` was bad implemented in the versions 2 and 3.

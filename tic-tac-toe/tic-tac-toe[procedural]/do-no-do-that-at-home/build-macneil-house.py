@@ -45,7 +45,7 @@ PYCODE += [
 
 #  - 1 = ×  |  0 = empty  |  1 = o
 
-PLAYER_ID = - 1
+PLAYER_ID = -1
 
 #  Columns:       A     B     C
 #
@@ -89,11 +89,11 @@ while True:
 PYCODE.append("""
 # Let's print the grid.
 {tab[0]}print()
-    """.lstrip().format(tab = TAB)
+""".lstrip().format(tab = TAB)
 )
 
 print_template = """
-{tab[0]}if {cell} == - 1:
+{tab[0]}if {cell} == -1:
 {tab[1]}print(" ×", end = "")
 {tab[0]}elif {cell} == 1:
 {tab[1]}print(" o", end = "")
@@ -125,7 +125,7 @@ for row in range(1, 4):
 
     if row != 3:
         PYCODE += [
-            "{tab[0]}print('-'*11)".format(tab = TAB),
+            '{tab[0]}print("-"*11)'.format(tab = TAB),
             ""
         ]
 
@@ -227,7 +227,7 @@ PYCODE.append(
 {tab[1]}print()
 {tab[1]}print("No one wins.")
 {tab[1]}break
-    """.lstrip().format(
+    """.strip().format(
         tab     = TAB,
         product = product
     )

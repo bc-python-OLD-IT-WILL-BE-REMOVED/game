@@ -2,6 +2,16 @@
 2018-10-13
 ==========
 
+Horror version: for pedagogical reason, we add a version with hard names and tests.
+
+
+Version in path::``several-guis-one-data-model``: two little enhancements.
+
+    1) ``datamodel``: a better managment of the global variables with mimal numbers of variables for each functions.
+
+    2) ``tictactoe-tkinter``: one new function ``infos`` eases the building of the title, and updating regarding to the changes in ``datamodel``.
+
+
 Version 5: two changes.
 
     1) A function ``coord_2_pos`` has been added to convert cartesian like coordinates to the corresponding position in ``GRID_INLINE``.

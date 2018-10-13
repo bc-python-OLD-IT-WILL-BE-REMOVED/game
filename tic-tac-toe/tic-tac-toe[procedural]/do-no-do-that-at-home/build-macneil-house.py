@@ -16,9 +16,9 @@ for shift in range(4, 17, 4):
     TAB.append(" "*shift)
 
 
-# --------------- #
-# -- CONSTANTS -- #
-# --------------- #
+# ----------- #
+# -- TOOLS -- #
+# ----------- #
 
 def celltext(col, row):
     return "CELL_{col}{row}".format(
@@ -48,6 +48,7 @@ PYCODE += [
 PLAYER_ID = - 1
 
 #  Columns:       A     B     C
+#
 #  Rows   :  1    .  |  .  |  .
 #               -----------------
 #            2    .  |  .  |  .
@@ -256,7 +257,7 @@ goodchoices = []
 goodchoices = [
     goodchoice_temp.format(
             tab         = TAB,
-            ifstatement = "elif" if col != "A" or row > 1 else "if",
+            ifstatement = "if" if col == "A" and row == 1 else "elif",
             col         = col,
             row         = row,
             cell        = celltext(col, row)

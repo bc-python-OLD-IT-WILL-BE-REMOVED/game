@@ -2,19 +2,19 @@
 # -- SIZE OF THE GRID -- #
 # ---------------------- #
 
-GRID_SIZE = None
+GRID_SIZE = 3
 
-while GRID_SIZE is None:
-    GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
-
-    if not GRID_SIZE.isdigit():
-        GRID_SIZE = None
-
-    else:
-        GRID_SIZE = int(GRID_SIZE)
-
-        if not 3 <= GRID_SIZE <= 20:
-            GRID_SIZE = None
+# while GRID_SIZE is None:
+#     GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
+#
+#     if not GRID_SIZE.isdigit():
+#         GRID_SIZE = None
+#
+#     else:
+#         GRID_SIZE = int(GRID_SIZE)
+#
+#         if not 3 <= GRID_SIZE <= 20:
+#             GRID_SIZE = None
 
 
 # --------------- #
@@ -68,20 +68,24 @@ def nextplayer(actual_player):
     return actual_player
 
 
-def reset_game(actual_player, grid, grid_size, empty):
+def reset_game(actual_player, grid):
+    global GRID_SIZE, EMPTY
+
     actual_player = 0
 
     grid = {
-        (row, col): empty
-        for row in range(grid_size)
-        for col in range(grid_size)
+        (row, col): EMPTY
+        for row in range(GRID_SIZE)
+        for col in range(GRID_SIZE)
     }
 
     return actual_player, grid
 
 
-def cell_can_be_played(grid, empty, row, col):
-    return grid[row, col] == empty
+def cell_can_be_played(grid, row, col):
+    global GRID_SIZE, EMPTY
+
+    return grid[row, col] == EMPTY
 
 
 def addtoken(grid, row, col, token):
@@ -90,25 +94,27 @@ def addtoken(grid, row, col, token):
     return grid
 
 
-def game_state(grid, grid_size, empty, coords_to_test):
+def game_state(grid):
+    global GRID_SIZE, EMPTY, COORDS_TO_TEST
+
 # True : someone wins.
 # None : noone wins.
 # False: next player can play.
 
 # A winner ?
-    for onetest in coords_to_test:
+    for onetest in COORDS_TO_TEST:
         total = sum([
             grid[row, col]
             for (row, col) in onetest
         ])
 
-        if abs(total) == grid_size:
+        if abs(total) == GRID_SIZE:
             return True
 
 # No more choice ?
-    for row in range(grid_size):
-        for col in range(grid_size):
-            if grid[row, col] == empty:
+    for row in range(GRID_SIZE):
+        for col in range(GRID_SIZE):
+            if grid[row, col] == EMPTY:
                 return False
 
 # No more choice

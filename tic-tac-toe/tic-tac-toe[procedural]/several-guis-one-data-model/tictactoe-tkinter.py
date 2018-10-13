@@ -119,6 +119,23 @@ def drawtoken(row, col, token):
         )
 
 
+def infos(actual_player, play_ing, header = True):
+    global PLAYERS, SYMBOLS
+
+    if header:
+        header = "TIC TAC TOE - "
+
+    else:
+        header = ""
+
+    return "{header}Player {nbplayer} {verb} with {symbol}".format(
+        header   = header,
+        nbplayer = actual_player + 1,
+        verb     = play_ing,
+        symbol   = SYMBOLS[PLAYERS[actual_player]]
+    )
+
+
 def leftclick(event):
     global GRID, GRID_SIZE, PLAYERS, ACTUAL_PLAYER, COORDS_TO_TEST, \
            MAIN_WINDOW, SYMBOLS
@@ -128,7 +145,6 @@ def leftclick(event):
 
     if cell_can_be_played(
         grid  = GRID,
-        empty = EMPTY,
         row   = row,
         col   = col
     ):
@@ -141,20 +157,18 @@ def leftclick(event):
 
         drawtoken(row, col, PLAYERS[ACTUAL_PLAYER])
 
-        endofgame = game_state(
-            grid           = GRID,
-            grid_size      = GRID_SIZE,
-            empty          = EMPTY,
-            coords_to_test = COORDS_TO_TEST
-        )
+        endofgame = game_state(grid = GRID)
 
         if endofgame is None:
             endofgame = True
             title = "No one wins..."
 
         elif endofgame:
-            title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
-                  + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
+            title = infos(
+                actual_player = ACTUAL_PLAYER,
+                play_ing      = "playing",
+                header        = False
+            ) + " has won."
 
         if endofgame:
             MAIN_WINDOW.title(title + " [SEE YOUR TERMINAL]")
@@ -165,7 +179,10 @@ def leftclick(event):
         ACTUAL_PLAYER = nextplayer(ACTUAL_PLAYER)
 
         MAIN_WINDOW.title(
-            'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
+            infos(
+                actual_player = ACTUAL_PLAYER,
+                play_ing      = "plays"
+            )
         )
 
 
@@ -176,18 +193,19 @@ CANVAS.bind(
 
 
 def main():
-    global ACTUAL_PLAYER, GRID, GRID_SIZE, EMPTY, \
+    global ACTUAL_PLAYER, GRID, \
            MAIN_WINDOW, SYMBOLS
 
     ACTUAL_PLAYER, GRID = reset_game(
-        actual_player = ACTUAL_PLAYER ,
-        grid          = GRID,
-        grid_size     = GRID_SIZE,
-        empty         = EMPTY
+        actual_player = ACTUAL_PLAYER,
+        grid          = GRID
     )
 
     MAIN_WINDOW.title(
-        'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
+        infos(
+            actual_player = ACTUAL_PLAYER,
+            play_ing      = "plays"
+        )
     )
 
     MAIN_WINDOW.mainloop()

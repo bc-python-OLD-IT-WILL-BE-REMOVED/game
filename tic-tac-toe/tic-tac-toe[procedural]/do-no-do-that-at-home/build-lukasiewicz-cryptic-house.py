@@ -37,28 +37,21 @@ with open(
 PYCODE = PYCODE.replace(
     "#  - 1 = ×  |  0 = empty  |  1 = o",
     """
-#  x indicates the id of the player using the following conventions :
-#
-#  - 1 = ×  |  0 = empty  |  1 = o
-    """.strip()
-)
+# Some useful shortcuts.
 
-PYCODE = PYCODE.replace("PLAYER_ID", "x")
+{shortcuts}
 
-PYCODE = PYCODE.replace(
-    "x = -1",
-    """
-x = -1
-
-# Some useful texts. We use UNICODE codification because any programer knows it.
+# Some useful texts. We use UNICODE codification because all programers know it.
 
 {declarations}
 
-# Some usefus shortcurts.
-
-{shortcuts}
-    """.strip()
+#  x indicates the id of the player using the following conventions :
+#
+#  - 1 = ×  |  0 = empty  |  1 = o
+    """.rstrip()
 )
+
+PYCODE = PYCODE.replace("PLAYER_ID", "x")
 
 
 # ----------------------------- #
@@ -87,7 +80,7 @@ PYCODE = PYCODE.replace(
 
 PYCODE = PYCODE.replace(
     "#            3    .  |  .  |  .",
-    "#   g  |  h  |  i"
+    "#   g  |  h  |  i\n#"
 )
 
 letters = list("abcdefghi")[::-1]
@@ -108,16 +101,25 @@ for col in "ABC":
 # -- SHORTCUTS FOR LON THINKING... -- #
 # ----------------------------------- #
 
+PYCODE = PYCODE.replace("x = -x", "x = ~x + 1")
+
+SHORTCUTS = {
+    "-1"                          : "_",
+    "0"                           : "__",
+    "11"                          : "____",
+    "1"                           : "___",
+    "True"                        : "z",
+    "False"                       : "y",
+    "input"                       : "_i_",
+    "print"                       : "_onl_",
+    "lambda x: print(x, end = '')": "_ononl_",
+}
+
 shortcuts = []
 
-for std, short in {
-    "False": "y",
-    "True" : "z",
-    "input": "_i_",
-    "print": "_onl_",
-    "lambda x: print(x, end = '')": "_ononl_",
-}.items():
-    PYCODE = PYCODE.replace(std, short)
+for std, short in SHORTCUTS.items():
+    if not std.isdigit() and std != "-1":
+        PYCODE = PYCODE.replace(std, short)
 
     shortcuts.append(
         "{name} = {val}".format(
@@ -147,6 +149,12 @@ while(match):
             end   = PYCODE[match.end():]
         )
 
+PYCODE = PYCODE.replace(
+    "# Let's _onl_ the grid.",
+    "# Let's print the grid."
+)
+
+
 # ---------------------- #
 # -- CRYPTIC MESSAGES -- #
 # ---------------------- #
@@ -171,34 +179,14 @@ for i, old_text in enumerate(old_messages):
 
     PYCODE = PYCODE.replace(old_text, new_var)
 
-    if "*" in old_text:
-        text, nb = old_text.split("*")
-
-    else:
-        text, nb = old_text, None
-
-    text = text[1: -1]
-    text = '"' + "".join(
-        '\\u%04x' % ord(c) for c in text
-    ) + '"'
-
-    if nb is not None:
-        text += '*' + nb
-
-
     declarations.append(
         "{name} = {text}".format(
             name = new_var,
-            text = text
+            text = old_text
         )
     )
 
 declarations = "\n".join(declarations)
-
-PYCODE = PYCODE.format(
-    declarations = declarations,
-    shortcuts    = shortcuts
-)
 
 
 # --------------------------------------- #
@@ -319,7 +307,7 @@ while(match):
 onelineif = ""
 
 for test, varstochange in ifstatements:
-    onelineif += "{0} if ({1}) else ".format(
+    onelineif += "{0} if {1} else ".format(
         varstochange,
         test
     )
@@ -344,12 +332,12 @@ PYCODE = PYCODE.replace(
     "# The game is finished.",
     """
 # Some usefus sums.
-{declarations}
+{sum_declarations}
     """.strip()
 )
 
-declarations = []
-newvarssum   = []
+sum_declarations = []
+newvarssum       = []
 
 for i, sum in enumerate([
     "a + d + g",
@@ -366,18 +354,16 @@ for i, sum in enumerate([
 
     PYCODE = PYCODE.replace(sum, newvar)
 
-    declarations.append("{0} = {1}".format(newvar, sum))
+    sum_declarations.append("{0} = {1}".format(newvar, sum))
 
 
-declarations = "\n".join(
+sum_declarations = "\n".join(
     "{tab[0]}{newvar}".format(
         tab    = TAB,
         newvar = newvar
     )
-    for newvar in declarations
+    for newvar in sum_declarations
 ) + "\n"
-
-PYCODE = PYCODE.format(declarations = declarations)
 
 
 # ------------------------------------- #
@@ -412,11 +398,30 @@ new_test = new_test + " != 1"
 PYCODE = PYCODE.replace(old_test, new_test)
 
 
-# --------------------------- #
-# -- MISC. CRYPTIFICATIONS -- #
-# --------------------------- #
+# -------------------------- #
+# -- LAST CRYPTIFICATIONS -- #
+# -------------------------- #
 
-PYCODE = PYCODE.replace("x = -x", "x = ~x+1")
+PYCODE = PYCODE.replace(
+    """
+a = 0
+b = 0
+c = 0
+d = 0
+e = 0
+f = 0
+g = 0
+h = 0
+i = 0
+    """.strip(),
+    "a = b = c = d = e = f = g = h = i = 0"
+)
+
+for std, short in SHORTCUTS.items():
+    if std.isdigit() or std == "-1":
+        for before in ["= ", "*", "+ "]:
+            PYCODE       = PYCODE.replace(before + std, before + short)
+            declarations = declarations.replace(before + std, before + short)
 
 
 # -------------------------- #
@@ -436,6 +441,50 @@ while(match):
             text  = "\n",
             end   = PYCODE[match.end():]
         )
+
+
+# --------------------------------- #
+# -- INSERT CRYPTIC DECLARATIONS -- #
+# --------------------------------- #
+
+PYCODE = PYCODE.format(
+    declarations     = declarations,
+    shortcuts        = shortcuts,
+    sum_declarations = sum_declarations
+)
+
+
+# ------------------------------ #
+# -- CRYPTIFICATIONS OF TEXTS -- #
+# ------------------------------ #
+
+pattern = re.compile('"(.+?)"')
+
+match = True
+parts = ["\n"]
+
+while(match):
+    match = re.search(pattern, PYCODE)
+
+    if match:
+        start = PYCODE[:match.start()]
+
+        if parts[-1][-1] == "\n":
+            parts.append(start)
+
+        else:
+            parts[-1] += start
+
+        parts[-1] += '"' + "".join(
+            '\\u%04x' % ord(c) for c in match.group()[1:-1]
+        ) + '"'
+
+        PYCODE = PYCODE[match.end():]
+
+parts.append(PYCODE)
+
+PYCODE = "\n".join(parts[1:])
+PYCODE = PYCODE.replace("\n and", " and")
 
 
 # ------------------------- #

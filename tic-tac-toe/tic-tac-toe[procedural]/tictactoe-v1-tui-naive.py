@@ -61,6 +61,9 @@ def single_token_found(tokens):
 
 
 def game_state():
+# True : someone wins.
+# None : noone wins.
+# False: next player can play.
     global GRID, PLAYERS, EMPTY
 
 # A winner ?
@@ -74,7 +77,7 @@ def game_state():
         singletoken = single_token_found(oneline_tokens)
 
         if singletoken in PLAYERS:
-            return True, singletoken
+            return True
 
 # Horizontal test.
         oneline_tokens = set([
@@ -85,7 +88,7 @@ def game_state():
         singletoken = single_token_found(oneline_tokens)
 
         if singletoken in PLAYERS:
-            return True, singletoken
+            return True
 
 # Diagonal LU-2-RD test.
     oneline_tokens = set([
@@ -96,7 +99,7 @@ def game_state():
     singletoken = single_token_found(oneline_tokens)
 
     if singletoken in PLAYERS:
-        return True, singletoken
+        return True
 
 # Diagonal LD-2-RU test.
     oneline_tokens = set([
@@ -107,16 +110,16 @@ def game_state():
     singletoken = single_token_found(oneline_tokens)
 
     if singletoken in PLAYERS:
-        return True, singletoken
+        return True
 
-# No more choice ?
+# Remaining choices
     for row in range(3):
         for col in range(3):
-            if GRID[row, col] == EMPTY:
-                return False, None
+            if GRID[row][col] == EMPTY:
+                return False
 
 # No more choice
-    return True, None
+    return None
 
 
 # --------- #
@@ -173,7 +176,7 @@ def main():
 
     while True:
         print()
-        print("PLAYER", ACTUAL_PLAYER + 1, "plays with", PLAYERS[ACTUAL_PLAYER])
+        print("PLAYER ", ACTUAL_PLAYER + 1, " plays with ", PLAYERS[ACTUAL_PLAYER])
 
         badanswer = True
 
@@ -185,15 +188,14 @@ def main():
         addtoken(row, col, PLAYERS[ACTUAL_PLAYER])
         update_grid_drawn()
 
-        endofgame, winningtoken = game_state()
+        endofgame = game_state()
 
-        if endofgame:
-            if winningtoken == None:
-                print("No one wins...")
+        if endofgame is None:
+            print("No one wins...")
+            break
 
-            else:
-                print("PLAYER", ACTUAL_PLAYER + 1, "playing with", PLAYERS[ACTUAL_PLAYER], "has won.")
-
+        elif endofgame:
+            print("PLAYER ", ACTUAL_PLAYER + 1, " playing with ", PLAYERS[ACTUAL_PLAYER], " has won.")
             break
 
         nextplayer()

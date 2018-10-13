@@ -3,13 +3,13 @@ import tkinter
 
 
 # ---------------------- #
-# -- SIZE OF THE GRID_INLINE -- #
+# -- SIZE OF THE GRID -- #
 # ---------------------- #
 
 GRID_SIZE = None
 
 while GRID_SIZE is None:
-    GRID_SIZE = input("Size of the GRID_INLINE (min 3 , max = 20): ")
+    GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
 
     if not GRID_SIZE.isdigit():
         GRID_SIZE = None
@@ -25,8 +25,10 @@ while GRID_SIZE is None:
 # -- CONSTANTS -- #
 # --------------- #
 
-# << Warning ! >>
-# DO NOT USE SPECIAL REGEX CARACTERS.
+# Here we use a string to modelize the grid.
+#
+# << Warning ! >> DO NOT USE SPECIAL REGEX CHARACTERS FOR THE TOKENS
+# NEITHER THE SYMBOL "?" WHICH IS INTERNALLY.
 
 CROSS, EMPTY, DISK = "× o"
 
@@ -43,62 +45,63 @@ LINE_SIZE   = GRID_SIZE**2
 
 PATTERN_TO_TEST = []
 
-pattern_template = ["." for _ in range(LINE_SIZE)]
+or_patterns = []
 
-for token in PLAYERS:
-    or_patterns = []
+anything   = "."
+token_like = "?"
 
-    for row in range(GRID_SIZE):
-        row_pattern = pattern_template[:]
-        col_pattern = pattern_template[:]
+# Rows.
+pattern_anything       = anything*GRID_SIZE
+row_pattern_token_like = token_like*GRID_SIZE
 
-        firsttoken = True
-
-        for col in range(GRID_SIZE):
-            if firsttoken:
-                regtoken = "({0})".format(token)
-                firsttoken = False
-
-            else:
-                regtoken = token
-
-            row_pattern[3*row + col] = regtoken
-            col_pattern[3*col + row] = regtoken
-
-        or_patterns += [row_pattern, col_pattern]
-
-    diag_1_pattern = pattern_template[:]
-    diag_2_pattern = pattern_template[:]
-
-    firsttoken = True
-
-    for row in range(GRID_SIZE):
-        if firsttoken:
-            regtoken = "({0})".format(token)
-            firsttoken = False
-
-        else:
-            regtoken = token
-
-        diag_1_pattern[(GRID_SIZE + 1)*row]     = regtoken
-        diag_2_pattern[2 + (GRID_SIZE - 1)*row] = regtoken
-
-    or_patterns += [diag_1_pattern, diag_2_pattern]
-    or_patterns  = ["".join(x) for x in or_patterns]
-
-    PATTERN_TO_TEST.append(
-        "|".join(
-            "({0})".format(x) for x in or_patterns
-        )
+for i in range(GRID_SIZE):
+    or_patterns.append(
+        pattern_anything*i
+        + row_pattern_token_like
+        + pattern_anything*(GRID_SIZE - 1 - i)
     )
 
-PATTERN_TO_TEST = "^{0}$".format("|".join(PATTERN_TO_TEST))
+# Columns.
+    pattern = anything*i + token_like + anything*(GRID_SIZE - 1 - i)
+
+    or_patterns.append(pattern*GRID_SIZE)
+
+# Diagonal LEFT-UP to RIGHT-DOWN.
+pattern = (token_like + pattern_anything)*(GRID_SIZE - 1) + token_like
+
+or_patterns.append(pattern)
+
+# Diagonal LEFT-DOWN to RIGHT-UP.
+pattern = ""
+
+for i in range(GRID_SIZE):
+    pattern += anything*(GRID_SIZE - 1 - i) + token_like + anything*i
+
+or_patterns.append(pattern)
+
+
+or_patterns = "|".join(or_patterns)
+
+for token in PLAYERS:
+    PATTERN_TO_TEST.append(
+        or_patterns.replace("?", token)
+    )
+
+PATTERN_TO_TEST = "^{0}$".format(
+    "|".join(PATTERN_TO_TEST)
+)
+
 PATTERN_TO_TEST = re.compile(PATTERN_TO_TEST)
 
 
 # ----------------------- #
 # -- STATE OF THE GAME -- #
 # ----------------------- #
+
+def coord_2_pos(row, col):
+    global GRID_SIZE
+
+    return GRID_SIZE*row + col
 
 
 def replaceat(text, pos, char):
@@ -121,32 +124,35 @@ def reset_game():
 
 
 def cell_can_be_played(row, col):
-    global GRID_INLINE, EMPTY
+    global GRID_INLINE, GRID_SIZE, EMPTY
 
-    return GRID_INLINE[3*row + col] == EMPTY
+    return GRID_INLINE[coord_2_pos(row, col)] == EMPTY
 
 
 def addtoken(row, col, token):
-    global GRID_INLINE
+    global GRID_INLINE, GRID_SIZE
 
-    GRID_INLINE = replaceat(GRID_INLINE, 3*row + col, token)
+    GRID_INLINE = replaceat(GRID_INLINE, coord_2_pos(row, col), token)
 
 
 def game_state():
-    global GRID_INLINE, GRID_SIZE, EMPTY, PATTERN_TO_TEST
+# True : someone wins.
+# None : noone wins.
+# False: next player can play.
+    global GRID_INLINE, EMPTY, PATTERN_TO_TEST
 
 # A winner ?
     match = PATTERN_TO_TEST.search(GRID_INLINE)
 
     if match:
-        return True, CROSS
+        return True
 
-# No more choice ?
+# Remaining choices
     if EMPTY in GRID_INLINE:
-        return False, None
+        return False
 
 # No more choice
-    return True, None
+    return None
 
 
 # --------------------------- #
@@ -202,7 +208,7 @@ CANVAS.grid(
     pady = padforstarting
 )
 
-# Draw the GRID_INLINE once upon the time.
+# Draw the grid once upon the time.
 WIDTH_CELL = XYDIM_CANVAS // GRID_SIZE
 
 SHIFT_XY = 5
@@ -276,28 +282,27 @@ def leftclick(event):
         addtoken(row, col, PLAYERS[ACTUAL_PLAYER])
         drawtoken(row, col, PLAYERS[ACTUAL_PLAYER])
 
-        endofgame, winningtoken = game_state()
+        endofgame = game_state()
+
+        if endofgame is None:
+            endofgame = True
+            title     = "No one wins..."
+
+        elif endofgame:
+            title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
+                  + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
 
         if endofgame:
-            if winningtoken == None:
-                title = "No one wins..."
-
-            else:
-                title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
-                      + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
-
             MAIN_WINDOW.title(title + " [SEE YOUR TERMINAL]")
 
             input("Press some key in the terminal...")
-
             exit()
 
-        else:
-            nextplayer()
+        nextplayer()
 
-            MAIN_WINDOW.title(
-                'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
-            )
+        MAIN_WINDOW.title(
+            'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
+        )
 
 
 CANVAS.bind(

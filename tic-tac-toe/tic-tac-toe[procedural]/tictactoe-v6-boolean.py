@@ -1,102 +1,195 @@
+import re
 import tkinter
+
+
+# ---------------------- #
+# -- SIZE OF THE GRID -- #
+# ---------------------- #
+
+GRID_SIZE = 3
+
+# while GRID_SIZE is None:
+#     GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
+#
+#     if not GRID_SIZE.isdigit():
+#         GRID_SIZE = None
+#
+#     else:
+#         GRID_SIZE = int(GRID_SIZE)
+#
+#         if not 3 <= GRID_SIZE <= 20:
+#             GRID_SIZE = None
 
 
 # --------------- #
 # -- CONSTANTS -- #
 # --------------- #
 
-CROSS, EMPTY, DISK = range(-1, 2)
+# We use 2 bits to indicate one cell such as to have a "linear" binary
+# representation of the grid.
+
+CROSS, EMPTY, DISK = 0b01, 0b11, 0b10
 
 PLAYERS       = [CROSS, DISK]
-ACTUAL_PLAYER = 0
+ACTUAL_PLAYER = 0b0
 
-GRID = None
+GRID_INLINE = 0b0
+LINE_SIZE   = GRID_SIZE**2
 
 
 # --------------- #
 # -- FOR TESTS -- #
 # --------------- #
 
-COORDS_TO_TEST = []
+DUO_MASKS_FOR_TEST = []
 
-for row in range(3):
-    COORDS_TO_TEST.append([
-        (row, col)
-        for col in range(3)
-    ])
+for token in PLAYERS:
+# Tokens everywhere
+    tokens_everywhere = token
 
-    COORDS_TO_TEST.append([
-        (col, row)
-        for col in range(3)
-    ])
+    for _ in range(LINE_SIZE - 1):
+        tokens_everywhere <<= 2
+        tokens_everywhere  |= token
 
-COORDS_TO_TEST.append([
-    (row, row)
-    for row in range(3)
-])
+# Rows
+    section_mask   = 0b1
+    section_mask <<= 2*GRID_SIZE
+    section_mask  -= 1
 
-COORDS_TO_TEST.append([
-    (2 - row, row)
-    for row in range(3)
-])
+    for _ in range(GRID_SIZE):
+        DUO_MASKS_FOR_TEST.append((
+            section_mask,
+            section_mask & tokens_everywhere
+        ))
+
+        section_mask <<= 2*GRID_SIZE
+
+# Columns
+    for i in range(GRID_SIZE):
+        firstcell   = 0b11
+        firstcell <<= 2*i
+
+        section_mask = firstcell
+
+        for _ in range(GRID_SIZE - 1):
+            section_mask <<= 2*GRID_SIZE
+            section_mask  |= firstcell
+
+        DUO_MASKS_FOR_TEST.append((
+            section_mask,
+            section_mask & tokens_everywhere
+        ))
+
+# Diagonal LEFT-UP to RIGHT-DOWN.
+    firstcell = 0b11
+
+    for _ in range(GRID_SIZE - 1):
+        section_mask <<= 2*(GRID_SIZE + 1)
+        section_mask  |= firstcell
+
+    DUO_MASKS_FOR_TEST.append((
+        section_mask,
+        section_mask & tokens_everywhere
+    ))
+
+# Diagonal LEFT-DOWN to RIGHT-UP.
+    section_mask = 0b0
+
+    for i in range(GRID_SIZE):
+        section_mask <<= 2*(GRID_SIZE - i)
+        section_mask  |= firstcell
+        section_mask <<= 2*i
+
+    DUO_MASKS_FOR_TEST.append((
+        section_mask,
+        section_mask & tokens_everywhere
+    ))
 
 
 # ----------------------- #
 # -- STATE OF THE GAME -- #
 # ----------------------- #
 
+def coord_2_pos(row, col):
+    global GRID_SIZE
+
+    return GRID_SIZE*row + col
+
+
+def replaceat(text, pos, token):
+    global GRID_INLINE, LINE_SIZE
+
+    left_pos = LINE_SIZE - pos - 1
+
+    mask_right_part   = 0b1
+    mask_right_part <<= 2*left_pos
+    mask_right_part  -= 1
+
+    token <<= 2*left_pos
+
+    left_pos += 1
+
+    left_part   = GRID_INLINE
+    left_part >>= 2*left_pos
+    left_part <<= 2*left_pos
+
+    right_part = GRID_INLINE & mask_right_part
+
+    return left_part | token | right_part
+
+
 def nextplayer():
     global ACTUAL_PLAYER
 
-    ACTUAL_PLAYER += 1
-    ACTUAL_PLAYER %= 2
+    ACTUAL_PLAYER ^= 0b1
 
 
 def reset_game():
-    global ACTUAL_PLAYER, GRID, EMPTY
+    global ACTUAL_PLAYER, GRID_INLINE, LINE_SIZE
 
-    ACTUAL_PLAYER = 0
+    ACTUAL_PLAYER = 0b0
 
-    GRID = {
-        (row, col): EMPTY
-        for row in range(3)
-        for col in range(3)
-    }
+    GRID_INLINE   = 0b1
+    GRID_INLINE <<= 2*LINE_SIZE
+    GRID_INLINE  -= 1
 
 
 def cell_can_be_played(row, col):
-    global GRID, EMPTY
+    global GRID_INLINE, GRID_SIZE, LINE_SIZE, EMPTY
 
-    return GRID[row, col] == EMPTY
+    cell   = GRID_INLINE
+    cell >>= 2*(LINE_SIZE - GRID_SIZE*row - col - 1)
+
+    return cell & EMPTY == EMPTY
 
 
 def addtoken(row, col, token):
-    global GRID
+    global GRID_INLINE, GRID_SIZE
 
-    GRID[row, col] = token
+    GRID_INLINE = replaceat(GRID_INLINE, coord_2_pos(row, col), token)
 
 
 def game_state():
 # True : someone wins.
 # None : noone wins.
 # False: next player can play.
-    global GRID, EMPTY, COORDS_TO_TEST
+    global GRID_INLINE, EMPTY, LINE_SIZE, DUO_MASKS_FOR_TEST
 
 # A winner ?
-    for onetest in COORDS_TO_TEST:
-        total = sum([
-            GRID[row, col]
-            for (row, col) in onetest
-        ])
+    for sectmask, winmask in DUO_MASKS_FOR_TEST:
+        sectiontotest = GRID_INLINE & sectmask
 
-        if abs(total) == 3:
+        if sectiontotest & winmask == sectiontotest:
             return True
 
 # Remaining choices
-    for row in range(3):
-        for col in range(3):
-            if GRID[row, col] == EMPTY:
-                return False
+    cells = GRID_INLINE
+
+    for _ in range(LINE_SIZE):
+        if cells & EMPTY == EMPTY:
+            return False
+
+        cells >>= 2
 
 # No more choice
     return None
@@ -155,15 +248,15 @@ CANVAS.grid(
     pady = padforstarting
 )
 
-# Draw the grid once upon the time.
-WIDTH_CELL = XYDIM_CANVAS // 3
+# Draw the GRID_INLINE once upon the time.
+WIDTH_CELL = XYDIM_CANVAS // GRID_SIZE
 
 SHIFT_XY = 5
 DIAMETER = WIDTH_CELL - 2*SHIFT_XY
 
 position   = 1 - WIDTH_CELL
 
-for i in range(1, 4):
+for i in range(1, GRID_SIZE + 1):
     position += WIDTH_CELL
 
     CANVAS.create_line(
@@ -233,7 +326,7 @@ def leftclick(event):
 
         if endofgame is None:
             endofgame = True
-            title = "No one wins..."
+            title     = "No one wins..."
 
         elif endofgame:
             title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
@@ -261,7 +354,6 @@ CANVAS.bind(
 def main():
     global PLAYERS, ACTUAL_PLAYER, \
            MAIN_WINDOW, SYMBOLS
-
 
     reset_game()
 

@@ -96,6 +96,9 @@ def addtoken(row, col, token):
 
 
 def game_state():
+# True : someone wins.
+# None : noone wins.
+# False: next player can play.
     global GRID, GRID_SIZE, EMPTY, COORDS_TO_TEST
 
 # A winner ?
@@ -106,16 +109,16 @@ def game_state():
         ])
 
         if abs(total) == GRID_SIZE:
-            return True, total // GRID_SIZE
+            return True
 
-# No more choice ?
+# Remaining choices
     for row in range(GRID_SIZE):
         for col in range(GRID_SIZE):
             if GRID[row, col] == EMPTY:
-                return False, None
+                return False
 
 # No more choice
-    return True, None
+    return None
 
 
 # --------------------------- #
@@ -245,28 +248,27 @@ def leftclick(event):
         addtoken(row, col, PLAYERS[ACTUAL_PLAYER])
         drawtoken(row, col, PLAYERS[ACTUAL_PLAYER])
 
-        endofgame, winningtoken = game_state()
+        endofgame = game_state()
+
+        if endofgame is None:
+            endofgame = True
+            title = "No one wins..."
+
+        elif endofgame:
+            title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
+                  + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
 
         if endofgame:
-            if winningtoken == None:
-                title = "No one wins..."
-
-            else:
-                title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
-                      + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
-
             MAIN_WINDOW.title(title + " [SEE YOUR TERMINAL]")
 
             input("Press some key in the terminal...")
-
             exit()
 
-        else:
-            nextplayer()
+        nextplayer()
 
-            MAIN_WINDOW.title(
-                'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
-            )
+        MAIN_WINDOW.title(
+            'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
+        )
 
 
 CANVAS.bind(

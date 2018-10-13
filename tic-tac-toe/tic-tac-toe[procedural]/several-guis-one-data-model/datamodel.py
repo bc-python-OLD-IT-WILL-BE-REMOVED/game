@@ -91,6 +91,10 @@ def addtoken(grid, row, col, token):
 
 
 def game_state(grid, grid_size, empty, coords_to_test):
+# True : someone wins.
+# None : noone wins.
+# False: next player can play.
+
 # A winner ?
     for onetest in coords_to_test:
         total = sum([
@@ -99,13 +103,13 @@ def game_state(grid, grid_size, empty, coords_to_test):
         ])
 
         if abs(total) == grid_size:
-            return True, total // grid_size
+            return True
 
 # No more choice ?
     for row in range(grid_size):
         for col in range(grid_size):
             if grid[row, col] == empty:
-                return False, None
+                return False
 
 # No more choice
-    return True, None
+    return None

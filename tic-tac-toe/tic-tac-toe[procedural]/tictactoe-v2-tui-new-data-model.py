@@ -87,6 +87,9 @@ def addtoken(row, col, token):
 
 
 def game_state():
+# True : someone wins.
+# None : noone wins.
+# False: next player can play.
     global GRID, EMPTY, COORDS_TO_TEST
 
 # A winner ?
@@ -97,16 +100,16 @@ def game_state():
         ])
 
         if abs(total) == 3:
-            return True, total // 3
+            return True
 
-# No more choice ?
+# Remaining choices
     for row in range(3):
         for col in range(3):
             if GRID[row, col] == EMPTY:
-                return False, None
+                return False
 
 # No more choice
-    return True, None
+    return None
 
 
 # --------- #
@@ -168,7 +171,7 @@ def main():
 
     while True:
         print()
-        print("PLAYER", ACTUAL_PLAYER + 1, "plays with", SYMBOLS[PLAYERS[ACTUAL_PLAYER]])
+        print("PLAYER ", ACTUAL_PLAYER + 1, " plays with ", SYMBOLS[PLAYERS[ACTUAL_PLAYER]])
 
         badanswer = True
 
@@ -180,15 +183,14 @@ def main():
         addtoken(row, col, PLAYERS[ACTUAL_PLAYER])
         update_grid_drawn()
 
-        endofgame, winningtoken = game_state()
+        endofgame = game_state()
 
-        if endofgame:
-            if winningtoken == None:
-                print("No one wins...")
+        if endofgame is None:
+            print("No one wins...")
+            break
 
-            else:
-                print("PLAYER", ACTUAL_PLAYER + 1, "playing with", SYMBOLS[PLAYERS[ACTUAL_PLAYER]], "has won.")
-
+        elif endofgame:
+            print("PLAYER ", ACTUAL_PLAYER + 1, " playing with ", SYMBOLS[PLAYERS[ACTUAL_PLAYER]], " has won.")
             break
 
         nextplayer()

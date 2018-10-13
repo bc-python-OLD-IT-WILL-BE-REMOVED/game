@@ -141,33 +141,32 @@ def leftclick(event):
 
         drawtoken(row, col, PLAYERS[ACTUAL_PLAYER])
 
-        endofgame, winningtoken = game_state(
+        endofgame = game_state(
             grid           = GRID,
             grid_size      = GRID_SIZE,
             empty          = EMPTY,
             coords_to_test = COORDS_TO_TEST
         )
 
+        if endofgame is None:
+            endofgame = True
+            title = "No one wins..."
+
+        elif endofgame:
+            title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
+                  + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
+
         if endofgame:
-            if winningtoken == None:
-                title = "No one wins..."
-
-            else:
-                title = "PLAYER " + str(ACTUAL_PLAYER + 1) + " playing with " \
-                      + SYMBOLS[PLAYERS[ACTUAL_PLAYER]] + " has won."
-
             MAIN_WINDOW.title(title + " [SEE YOUR TERMINAL]")
 
             input("Press some key in the terminal...")
-
             exit()
 
-        else:
-            ACTUAL_PLAYER = nextplayer(ACTUAL_PLAYER)
+        ACTUAL_PLAYER = nextplayer(ACTUAL_PLAYER)
 
-            MAIN_WINDOW.title(
-                'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
-            )
+        MAIN_WINDOW.title(
+            'TIC TAC TOE - Player ' + str(ACTUAL_PLAYER + 1) + " plays with " + SYMBOLS[PLAYERS[ACTUAL_PLAYER]]
+        )
 
 
 CANVAS.bind(

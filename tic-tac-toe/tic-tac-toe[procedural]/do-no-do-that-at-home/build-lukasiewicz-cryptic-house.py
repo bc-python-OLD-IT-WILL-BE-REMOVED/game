@@ -144,12 +144,8 @@ while(match):
         PYCODE = "{start}_ononl_({text}){end}".format(
             start = PYCODE[:match.start()],
             text  = match.group(1),
-            end   =PYCODE[match.end():]
+            end   = PYCODE[match.end():]
         )
-
-
-
-
 
 
 # ---------------------- #

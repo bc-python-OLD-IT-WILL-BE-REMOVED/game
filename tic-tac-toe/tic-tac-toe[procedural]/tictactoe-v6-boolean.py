@@ -6,19 +6,19 @@ import tkinter
 # -- SIZE OF THE GRID -- #
 # ---------------------- #
 
-GRID_SIZE = 3
+GRID_SIZE = None
 
-# while GRID_SIZE is None:
-#     GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
-#
-#     if not GRID_SIZE.isdigit():
-#         GRID_SIZE = None
-#
-#     else:
-#         GRID_SIZE = int(GRID_SIZE)
-#
-#         if not 3 <= GRID_SIZE <= 20:
-#             GRID_SIZE = None
+while GRID_SIZE is None:
+    GRID_SIZE = input("Size of the grid (min 3 , max = 20): ")
+
+    if not GRID_SIZE.isdigit():
+        GRID_SIZE = None
+
+    else:
+        GRID_SIZE = int(GRID_SIZE)
+
+        if not 3 <= GRID_SIZE <= 20:
+            GRID_SIZE = None
 
 
 # --------------- #

@@ -6,7 +6,7 @@ from mistool.os_use import PPath as Path
 # --------------- #
 
 THIS_DIR = Path(__file__).parent
-PYFILE   = THIS_DIR / "tictactoe-nolist-nofonction.py"
+PYFILE   = THIS_DIR / "tictactoe-01-nolist-nofonction.py"
 
 PYCODE = []
 

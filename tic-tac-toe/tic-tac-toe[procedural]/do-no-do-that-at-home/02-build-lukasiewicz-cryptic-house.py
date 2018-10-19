@@ -9,14 +9,15 @@ from mistool.os_use import PPath as Path
 # -- CONSTANTS -- #
 # --------------- #
 
-THIS_DIR = Path(__file__).parent
-OLD_PYFILE   = THIS_DIR / "tictactoe-nolist-nofonction.py"
-NEW_PYFILE   = THIS_DIR / "tictactoe-nolist-nofonction-cryptified.py"
+THIS_DIR   = Path(__file__).parent
+OLD_PYFILE = THIS_DIR / "tictactoe-01-nolist-nofonction.py"
+NEW_PYFILE = THIS_DIR / "tictactoe-02-nolist-nofonction-cryptified.py"
 
 TAB = []
 
 for shift in range(4, 17, 4):
     TAB.append(" "*shift)
+
 
 # ------------------- #
 # -- ORIGINAL CODE -- #
@@ -47,7 +48,7 @@ PYCODE = PYCODE.replace(
 
 #  x indicates the id of the player using the following conventions :
 #
-#  - 1 = ×  |  0 = empty  |  1 = o
+#  __ = ×  |  ___ = empty  |  ____ = o
     """.rstrip()
 )
 
@@ -104,20 +105,22 @@ for col in "ABC":
 PYCODE = PYCODE.replace("x = -x", "x = ~x + 1")
 
 SHORTCUTS = {
-    "-1"                          : "_",
-    "0"                           : "__",
-    "11"                          : "____",
-    "1"                           : "___",
+    "-1"                          : "__",
+    "0"                           : "___",
+    "11"                          : "_____",
+    "1"                           : "____",
     "True"                        : "z",
     "False"                       : "y",
     "input"                       : "_i_",
     "print"                       : "_onl_",
-    "lambda x: print(x, end = '')": "_ononl_",
+    "lambda _: print(_, end = '')": "_ononl_",
 }
 
 shortcuts = []
 
-for std, short in SHORTCUTS.items():
+for std in sorted(SHORTCUTS.keys()):
+    short = SHORTCUTS[std]
+
     if not std.isdigit() and std != "-1":
         PYCODE = PYCODE.replace(std, short)
 

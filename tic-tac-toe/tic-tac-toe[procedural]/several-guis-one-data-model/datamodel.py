@@ -83,7 +83,7 @@ def reset_game(actual_player, grid):
 
 
 def cell_can_be_played(grid, row, col):
-    global GRID_SIZE, EMPTY
+    global EMPTY
 
     return grid[row, col] == EMPTY
 

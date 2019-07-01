@@ -1,4 +1,15 @@
 ==========
+2018-10-20
+==========
+
+"Horror" versions: in the underscore version, there are two new features in the management of the shortcuts defined in path::``_.py``
+
+    1) The shortcuts are defined using a deterministic way : string variables of the same length were not defined using the same order each time we used path::``03-build-(_o_o_)-cryptic-house.py``.
+
+    2) The shortcuts for numbers should be good now (for example, we must change `11` before `-1` and then we can change `1`).
+
+
+==========
 2018-10-19
 ==========
 
@@ -9,7 +20,7 @@
 2018-10-13
 ==========
 
-"Horror" versions: for pedagogical reason, we have added one version with hard names and tests. For example, texts are defined using unicode values or cryptic shortcuts with are used.
+"Horror" versions: for pedagogical reason, we have added one version with hard names and tests. For example, texts are defined using unicode values or cryptic shortcuts.
 
 
 Version in path::``several-guis-one-data-model``: two little enhancements.

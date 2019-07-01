@@ -20,10 +20,13 @@ _MODULE    = THIS_DIR / "_.py"
 # ----------- #
 
 def sortme(x):
-    if not isinstance(x, str):
+    if isinstance(x, int):
+        return (-abs(x), x)
+
+    else:
         x = str(x)
 
-    return -len(x)
+        return (-len(x), x)
 
 
 # ----------------------------- #
@@ -44,7 +47,7 @@ VARIABLES_USED = {
 }
 
 
-def walk_in_ast(code_ast, shift = ""):
+def walk_in_ast(code_ast):
     global VARIABLES_USED
 
     if isinstance(code_ast, ast.AST):
@@ -81,11 +84,11 @@ def walk_in_ast(code_ast, shift = ""):
                 except:
                     ...
 
-            walk_in_ast(getattr(code_ast, onefield), shift + " "*2)
+            walk_in_ast(getattr(code_ast, onefield))
 
     elif isinstance(code_ast, list):
         for el in code_ast:
-            walk_in_ast(el, shift + " "*2)
+            walk_in_ast(el)
 
 
 walk_in_ast(ast.parse(PYCODE))
@@ -145,10 +148,7 @@ NEWPYCODE = ["import _"]
 for oneline in PYCODE.splitlines():
     testline = oneline.strip()
 
-    if not testline or testline.startswith("#"):
-        ...
-
-    else:
+    if testline and not testline.startswith("#"):
         NEWPYCODE.append(oneline)
 
 NEWPYCODE = "\n".join(NEWPYCODE)
@@ -158,21 +158,23 @@ NEWPYCODE = "\n".join(NEWPYCODE)
 # -- _ MODULE -- #
 # -------------- #
 
-MOD_CODE = []
+PYMODCODE = ["#"]
 
-lastnbof_ = 1
+lastnbof_ = 0
 
 for val, _ in SHORTCUTS.items():
     nbof_ = len(_)
 
     for i in range(lastnbof_, nbof_ - 1):
-        MOD_CODE.append(f"#{'_'*i}")
+        PYMODCODE.append(f"#{'_'*i} = ...")
 
     lastnbof_ = nbof_
 
-    MOD_CODE.append(f"{_} = {val}")
+    PYMODCODE.append(f"{_} = {val}")
 
-MOD_CODE = "\n".join(MOD_CODE)
+PYMODCODE.append("")
+
+PYMODCODE = "\n".join(PYMODCODE)
 
 
 # -------------------------- #
@@ -192,4 +194,4 @@ with open(
     mode     = "w",
     encoding = "utf8"
 ) as pyfile:
-    pyfile.write(MOD_CODE)
+    pyfile.write(PYMODCODE)

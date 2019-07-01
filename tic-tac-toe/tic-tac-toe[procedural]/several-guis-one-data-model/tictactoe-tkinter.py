@@ -3,9 +3,9 @@ import tkinter
 from datamodel import *
 
 
-# --------------------------- #
-# -- CONSTANTS FOR THE GUI -- #
-# --------------------------- #
+# -------------------------------------- #
+# -- SETTINGS & CONSTANTS FOR THE GUI -- #
+# -------------------------------------- #
 
 SYMBOLS = {
     CROSS: "×",

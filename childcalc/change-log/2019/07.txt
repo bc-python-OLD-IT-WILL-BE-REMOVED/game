@@ -1,0 +1,5 @@
+==========
+2019-07-01
+==========
+
+Version 1: just two draft version, one for the terminal and another using tkinter.

@@ -1,5 +1,0 @@
-==========
-2019-07-01
-==========
-
-Version 1: first draft version for the terminal.

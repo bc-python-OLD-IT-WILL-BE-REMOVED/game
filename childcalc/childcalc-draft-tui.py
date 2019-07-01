@@ -31,7 +31,7 @@ def eucldiv(a, b):
 
 
 # Clé    : symbole aruthmétique.
-# Valeur : (message affiché, nom opé, fonc pour calcul, nb args retournés)
+# Valeur : (message affiché, nom opé, fonc pour calcul)
 
 def _datas_message(ope_symb):
     if ope_symb == SYMB_DIV:
@@ -61,6 +61,9 @@ OPES = {
 def ask(ope_symbol, a_tmax, b_tmax):
     a = randint(1, 10**(a_tmax) - 1)
     b = randint(1, 10**(b_tmax) - 1)
+
+    if ope_symbol in "-/" and a < b:
+        a, b = b, a
 
     message, _, func = OPES[ope_symbol]
 
@@ -298,25 +301,25 @@ def do_test(opes_to_test, nb_quest, sizes):
 def do_report(nb_quest, nb_good):
     rate = nb_good / nb_quest
 
-    message_good = "bonne réponse"
-
-    if nb_good > 1:
-        message_good = " ".join(
-            word + "s"
-            for word in message_good.split()
-        )
-
-    message_good = "{0} {1} sur {2}".format(
-        nb_good,
-        message_good,
-        nb_quest
-    )
-
-
     if rate == 0:
         report = "Aucune réponse juste, t'es une quiche..."
 
     else:
+        message_good = "bonne réponse"
+
+        if nb_good > 1:
+            message_good = " ".join(
+                word + "s"
+                for word in message_good.split()
+            )
+
+        message_good = "{0} {1} sur {2}".format(
+            nb_good,
+            message_good,
+            nb_quest
+        )
+
+
         if rate <= 0.2:
             comment = "il faut bosser encore un peu."
 
@@ -338,6 +341,7 @@ def do_report(nb_quest, nb_good):
         else:
             comment = "oh my godness ! MY GODNESS HiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiYA  TOUT BON !!!"
 
+
         report = message_good + ", " + comment
 
 
@@ -354,8 +358,8 @@ def main():
     continue_to_play = "oui"
 
     while continue_to_play == "oui":
-        opes_to_test = ["+"]#opes_wanted()
-        nb_quest     = 2# nb_quest_wanted()
+        opes_to_test = opes_wanted()
+        nb_quest     = nb_quest_wanted()
         sizes        = sizes_wanted(opes_to_test)
 
         nb_good = do_test(opes_to_test, nb_quest, sizes)

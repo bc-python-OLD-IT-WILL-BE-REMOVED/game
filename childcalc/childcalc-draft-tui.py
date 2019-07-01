@@ -1,9 +1,9 @@
 from random import randint, choice
 
 
-# ---------------- #
-# -- CONSTANTES -- #
-# ---------------- #
+# --------------- #
+# -- CONSTANTS -- #
+# --------------- #
 
 SYMB_DIV = "/"
 
@@ -13,9 +13,9 @@ SET_WIN   = set([WIN])
 SET_LOOSE = set([LOOSE])
 
 
-# ------------------------- #
-# -- OPÉRATIONS ÉVALUÉES -- #
-# ------------------------- #
+# -------------------------- #
+# -- OPERATIONS EVALUATED -- #
+# -------------------------- #
 
 def add(a, b):
     return a + b
@@ -30,14 +30,19 @@ def eucldiv(a, b):
     return (a // b, a % b)
 
 
-# Clé    : symbole aruthmétique.
-# Valeur : (message affiché, nom opé, fonc pour calcul)
+# KEY   : aithmétical symbol.
+# Value : (
+#     printed message,
+#     name of the opration,
+#     function doing the calculus
+# )
 
 def _datas_message(ope_symb):
     if ope_symb == SYMB_DIV:
         return "Divises {a} par {b}."
 
     return "Calcules {{a}} {ope} {{b}}.".format(ope = ope_symb)
+
 
 def _datas_val(ope_symb, ope_name, func):
     return (_datas_message(ope_symb), ope_name, func)

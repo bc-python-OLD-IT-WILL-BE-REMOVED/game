@@ -1,7 +1,14 @@
 ==========
+2019-07-03
+==========
+
+Version 3.1: a tkinter draft version (no settings configurable, no reporting and no image for the moment).
+
+
+==========
 2019-07-01
 ==========
 
-Version 2: modular code for the terminal. This is for the next step : a tkinter version.
-
 Version 1: first draft version for the terminal.
+
+Version 2: modular code for the terminal. This is for the next step : a tkinter version.

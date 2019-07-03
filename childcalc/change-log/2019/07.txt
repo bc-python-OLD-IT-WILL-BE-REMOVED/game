@@ -2,7 +2,7 @@
 2019-07-03
 ==========
 
-Version 3.1: a tkinter draft version (no settings configurable, no reporting and no image for the moment).
+Version 3.1: a tkinter draft version (for the moment, there aren't any reporting).
 
 
 ==========

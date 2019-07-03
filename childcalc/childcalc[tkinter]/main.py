@@ -2,6 +2,7 @@
 #     * https://www.tutorialspoint.com/python/tk_menu.htm
 
 from tkinter import *
+import os
 
 from model.ope import *
 from model.eval import *
@@ -15,21 +16,166 @@ OPES_TO_TEST = ALL_SYMB_OP
 NB_QUEST     = 5
 SIZES        = DEFAULT_SIZES
 
+
+OPES_SET = set(ALL_SYMB_OP)
+
+
+TAG_NB_QUEST = "nbquest"
+TAG_OPE      = "ope"
+TAG_PLUS     = "+"
+TAG_MINUS    = "-"
+TAG_FACT_1   = "*_1"
+TAG_FACT_2   = "*_2"
+TAG_DIV_1    = "/_1"
+TAG_DIV_2    = "/_2"
+
+_TAG_CALLING_WIN_ = "_CALLING_WIN_"
+
+
+SETTINGS_UI = {
+    TAG_NB_QUEST: "NOMBRE DE QUESTIONS",
+    TAG_OPE     : "OPÉRATIONS VOULUES ( + - * / )",
+    TAG_PLUS    : "TAILLE DES NOMBRES POUR LES ADDITIONS ET LES SOUSTRACTIONS",
+    TAG_FACT_1  : "TAILLE DU 1ER NOMBRE POUR LES PRODUITS",
+    TAG_FACT_2  : "TAILLE DU 2IÈME NOMBRE POUR LES PRODUITS",
+    TAG_DIV_1   : "TAILLE DU NOMBRE À DIVISER POUR LES DIVISIONS",
+    TAG_DIV_2   : "TAILLE DU NOMBRE QUI DIVISE POUR LES DIVISIONS",
+}
+
+
 TESTS = None
 
 NB_GOODS = 0
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 # ---------------------------- #
 # -- GUI - SETTINGS ACTIONS -- #
 # ---------------------------- #
 
-def donothing():
-    filewin = Toplevel(master = root)
-    button = Button(
-        master = filewin,
-        text   = "Coquille vide pour le moment !"
+
+def illegal_message(text):
+    return text  + " -- << NON COMPRIS >>"
+
+def update_settings(ids, labels):
+    global OPES_TO_TEST, NB_QUEST, SIZES
+
+    choices_are_ok = True
+
+    for tag in ids:
+        if tag == _TAG_CALLING_WIN_:
+            continue
+
+        choice = ids[tag].get()
+
+# Operations must be + , - , * or /
+        if tag == TAG_OPE:
+            opeset_wanted = set(x.strip() for x in choice.split())
+
+            if not opeset_wanted <= OPES_SET:
+                choices_are_ok = False
+
+                labels[tag].config(text = illegal_message(SETTINGS_UI[tag]))
+
+
+            else:
+                OPES_TO_TEST = [
+                    one_ope
+                    for one_ope in ALL_SYMB_OP
+                    if one_ope in opeset_wanted
+                ]
+
+# Other settings must be none sero inetgers.
+        else:
+            if not choice.isdigit():
+                choice = 0
+
+            else:
+                choice = int(choice)
+
+            if choice <= 0:
+                choices_are_ok = False
+
+                labels[tag].config(text = illegal_message(SETTINGS_UI[tag]))
+
+            elif tag == TAG_NB_QUEST:
+                NB_QUEST = choice
+
+            elif tag == "+":
+                choice = [choice] * 2
+
+                SIZES[tag]       = choice
+                SIZES[TAG_MINUS] = choice
+
+            else:
+                tag, pos = tag.split("_")
+
+                SIZES[tag][int(pos) - 1] = choice
+
+
+# Everuthing is ok !
+    if choices_are_ok:
+        update_settings_infos()
+        ids[_TAG_CALLING_WIN_].destroy()
+
+
+def change_settings():
+    settings_win = Toplevel(master = root)
+    settings_win.title('Calculs au hasard - Réglages')
+
+    user_frame = Frame(master = settings_win)
+    user_frame.grid(
+        row  = 0, column = 0,
+        padx = 5, pady   = 5
     )
-    button.pack()
+
+    ids    = {_TAG_CALLING_WIN_: settings_win}
+    labels = {}
+    row    = 0
+
+    for kind, message in SETTINGS_UI.items():
+        labels[kind] = Label(
+            master = user_frame,
+            text   = message
+        )
+
+        labels[kind].grid(
+            row    = row,
+            column = 0,
+        )
+
+        ids[kind] =  Entry(
+            master = user_frame,
+            relief = RAISED,
+        )
+
+        ids[kind].grid(row = row, column = 1)
+
+        row += 1
+
+    ids["nbquest"].insert(0, NB_QUEST)
+    ids["ope"].insert(0, OPES_TO_TEST)
+
+    for symb, size in SIZES.items():
+        if symb == "+":
+            ids[symb].insert(0, size[0])
+
+        elif symb != "-":
+            for i in range(2):
+                ids["{0}_{1}".format(symb, i+1)].insert(0, size[i])
+
+
+    button = Button(
+        master = settings_win,
+        text   = "MODIFIER",
+        command = lambda: update_settings(ids, labels)
+    )
+
+    button.grid(
+        row     = 1,
+        column  = 0
+    )
 
 
 def update_settings_infos():
@@ -79,6 +225,8 @@ RÉGLAGES MODIFIABLES : VOIR LE MENU
         message
     ))
 
+    root.update()
+
 
 # --------------------------- #
 # -- GUI - WORKING ACTIONS -- #
@@ -122,11 +270,9 @@ def update_working():
 
     validate_but.config(text = 'VALIDER')
 
-    root.update()
-
 
 def validate_answer():
-    global NB_GOODS, TESTS
+    global NB_GOODS, TESTS, neuropict
 
 # Quizz starts.
     if TESTS is None:
@@ -147,8 +293,19 @@ def validate_answer():
         if len(answers_wanted) == 2:
             answers_given.append(answer_2.get())
 
+# GOOD
         if answers_wanted == answers_given:
             NB_GOODS += 1
+
+            imgname = 'good'
+
+# BAD
+        else:
+            imgname = 'bad'
+
+        neuropict.config(
+            file = THIS_DIR + '/img/{0}.png'.format(imgname)
+        )
 
 # We continue.
         if TESTS:
@@ -166,7 +323,10 @@ def validate_answer():
 
             validate_but.config(text = 'RECOMMENCER')
 
-            root.update()
+            neuropict.config(file = THIS_DIR + '/img/question.png')
+
+# Force the update othe GUI.
+        working_frame.update()
 
 
 # ---------------- #
@@ -188,9 +348,15 @@ configmenu = Menu(
     tearoff = 0
 )
 
-configmenu.add_command(label="Changer", command=donothing)
+configmenu.add_command(
+    label   = "Changer",
+    command = change_settings
+)
 
-menubar.add_cascade(label="Réglages", menu=configmenu)
+menubar.add_cascade(
+    label = "Réglages",
+    menu  = configmenu
+)
 
 root.config(menu = menubar)
 
@@ -217,8 +383,13 @@ settings = Label(
 )
 settings.grid(row = 0, column = 0)
 
-update_settings_infos()
-
+setup_but = Button(
+    master  = settings_frame,
+    text    = "CHANGER LES RÉGLAGES",
+    command = change_settings,
+    relief  = SOLID,
+)
+setup_but.grid(row = 1, column = 0)
 
 # ------------------------ #
 # -- GUI - WORKING AREA -- #
@@ -288,24 +459,25 @@ validate_but = Button(
 validate_but.grid(row = 5, column = 0)
 
 
-canvas_neuro_picture = Canvas(
-    master     = working_frame,
-    width      = 200,
-    height     = 200,
-    background = 'grey'
+neuropict = PhotoImage(file = THIS_DIR + '/img/question.png')
+
+neuropict_label = Label(
+    master = working_frame,
+    image  = neuropict
 )
-canvas_neuro_picture.grid(
+neuropict_label.grid(
     row    = 6,
     column = 0,
     sticky = "ew"
 )
 
 
-bulid_new_tests()
-
-
 # -------------- #
 # -- LET'S GO -- #
 # -------------- #
 
-root.mainloop()
+if __name__ == "__main__":
+    update_settings_infos()
+    bulid_new_tests()
+
+    root.mainloop()

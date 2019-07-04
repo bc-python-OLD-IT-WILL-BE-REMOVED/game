@@ -635,6 +635,9 @@ neuropict_label.grid(
 report_win = Toplevel(master = root)
 report_win.title('Calculs au hasard - Score final')
 
+# No destroy button.
+report_win.protocol('WM_DELETE_WINDOW', lambda: None)
+
 width_screen = 550
 height_screen = 150
 

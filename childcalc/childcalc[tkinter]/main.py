@@ -249,7 +249,6 @@ def update_working():
            labels_answers_txt_var, entries_answers, \
            validate_but, working_frame
 
-    update_neuropict('question')
     clear_answers()
 
     entries_answers[0].focus()
@@ -360,8 +359,8 @@ def validate_answer():
         if validate_but["text"] == 'CONTINUER':
             we_continue = True
 
-            for i in range(2):
-                entries_answers[i].config(fg="black")
+            update_neuropict('question')
+            clear_answers()
 
 # BAD
         elif answers_wanted != answers_given:
@@ -395,9 +394,6 @@ def validate_answer():
 
                 clear_answers()
                 hide_answers([0, 1])
-
-                update_neuropict('question')
-
 
 # Report
                 show_report()

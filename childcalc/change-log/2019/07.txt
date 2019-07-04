@@ -2,7 +2,13 @@
 2019-07-04
 ==========
 
-Version 3.2: complete tkinter draft version (reporting has been added and some very little cosmetic changes have been done).
+Version 3.2: complete tkinter draft version.
+
+  1) Bad answers explained.
+
+  2) Reporting.
+
+  3) Some very little cosmetic changes have been done.
 
 
 ==========

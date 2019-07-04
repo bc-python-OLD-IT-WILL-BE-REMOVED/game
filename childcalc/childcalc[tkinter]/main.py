@@ -1,8 +1,10 @@
 # Source
 #     * https://www.tutorialspoint.com/python/tk_menu.htm
 
-from tkinter import *
 import os
+
+from tkinter import *
+from tkinter.font import Font
 
 from model.ope import *
 from model.eval import *
@@ -22,7 +24,7 @@ SIZES        = DEFAULT_SIZES
 # For settings
 TAG_OPE = "ope"
 
-SETTINGS_UI = {
+SETTINGS_GUI = {
     TAG_NB_QUEST: "NOMBRE DE QUESTIONS",
     TAG_OPE     : "OPÉRATIONS VOULUES ( + - * / )",
     TAG_PLUS    : "TAILLE DES NOMBRES POUR LES ADDITIONS ET LES SOUSTRACTIONS",
@@ -36,9 +38,6 @@ SETTINGS_UI = {
 TESTS      = None
 NB_GOODS   = 0
 
-REPORT_WIN   = None
-SETTINGS_WIN = None
-
 BUTTON_BCK_COLOR = 'blue'
 
 
@@ -46,13 +45,13 @@ BUTTON_BCK_COLOR = 'blue'
 # -- TOOLS -- #
 # ----------- #
 
-def txtdigit(i):
-    message = "chiffre"
+def txtdigit(nbdigits):
+    text = "chiffre"
 
-    if i != 1:
-        message += "s"
+    if nbdigits != 1:
+        text += "s"
 
-    return "{0} {1}".format(i, message)
+    return "{0} {1}".format(nbdigits, text)
 
 
 # ---------------------------- #
@@ -62,13 +61,16 @@ def txtdigit(i):
 def illegal_message(text):
     return text  + " -- << NON COMPRIS >>"
 
-def update_settings(ids, labels):
-    global OPES_TO_TEST, NB_QUEST, SIZES, SETTINGS_WIN
+
+def update_settings(settings_ids, labels):
+    global ALL_SYMB_OP, OPES_SET, OPES_TO_TEST, TAG_OPE, \
+           NB_QUEST, SIZES, \
+           SETTINGS_GUI, settings_win
 
     choices_are_ok = True
 
-    for tag in ids:
-        choice = ids[tag].get()
+    for tag in settings_ids:
+        choice = settings_ids[tag].get()
 
 # Operations must be + , - , * or /
         if tag == TAG_OPE:
@@ -81,7 +83,7 @@ def update_settings(ids, labels):
             if not opeset_wanted <= OPES_SET:
                 choices_are_ok = False
 
-                labels[tag].config(text = illegal_message(SETTINGS_UI[tag]))
+                settings_labels[tag].config(text = illegal_message(SETTINGS_GUI[tag]))
 
             else:
                 OPES_TO_TEST = [
@@ -101,7 +103,7 @@ def update_settings(ids, labels):
             if choice <= 0:
                 choices_are_ok = False
 
-                labels[tag].config(text = illegal_message(SETTINGS_UI[tag]))
+                settings_labels[tag].config(text = illegal_message(SETTINGS_GUI[tag]))
 
             elif tag == TAG_NB_QUEST:
                 NB_QUEST = choice
@@ -121,78 +123,40 @@ def update_settings(ids, labels):
     if choices_are_ok:
         update_settings_infos()
 
-        SETTINGS_WIN.destroy()
-        SETTINGS_WIN = None
+        bulid_new_tests()
+
+        settings_win.withdraw()
 
 
 def change_settings():
-    global SETTINGS_WIN
+    global  OPES_TO_TEST, \
+            NB_QUEST, SIZES,  \
+            BUTTON_BCK_COLOR, SETTINGS_GUI, settings_win
 
-    if SETTINGS_WIN is None:
-        SETTINGS_WIN = Toplevel(master = root)
-        SETTINGS_WIN.title('Calculs au hasard - Réglages')
+    settings_ids["nbquest"].delete(0, 'end')
+    settings_ids["nbquest"].insert(0, NB_QUEST)
 
-# No destroy button.
-        SETTINGS_WIN.protocol('WM_DELETE_WINDOW', lambda: None)
-
-    user_frame = Frame(master = SETTINGS_WIN)
-    user_frame.grid(
-        row  = 0, column = 0,
-        padx = 5, pady   = 5
-    )
-
-    ids    = {}
-    labels = {}
-    row    = 0
-
-    for kind, message in SETTINGS_UI.items():
-        labels[kind] = Label(
-            master = user_frame,
-            text   = message
-        )
-
-        labels[kind].grid(
-            row    = row,
-            column = 0,
-        )
-
-        ids[kind] =  Entry(
-            master = user_frame,
-            relief = RAISED,
-        )
-
-        ids[kind].grid(row = row, column = 1)
-
-        row += 1
-
-
-    ids["nbquest"].insert(0, NB_QUEST)
-    ids["ope"].insert(0, OPES_TO_TEST)
+    settings_ids["ope"].delete(0, 'end')
+    settings_ids["ope"].insert(0, OPES_TO_TEST)
 
     for symb, size in SIZES.items():
         if symb == "+":
-            ids[symb].insert(0, size[0])
+            settings_ids[symb].delete(0, 'end')
+            settings_ids[symb].insert(0, size[0])
 
         elif symb != "-":
             for i in range(2):
-                ids["{0}_{1}".format(symb, i+1)].insert(0, size[i])
+                settings_ids["{0}_{1}".format(symb, i+1)].delete(0, 'end')
+                settings_ids["{0}_{1}".format(symb, i+1)].insert(0, size[i])
 
-
-    button = Button(
-        master  = SETTINGS_WIN,
-        text    = "MODIFIER",
-        command = lambda: update_settings(ids, labels),
-        bg      = BUTTON_BCK_COLOR,
-    )
-
-    button.grid(
-        row     = 1,
-        column  = 0
-    )
+# Source: http://www.blog.pythonlibrary.org/2012/07/26/tkinter-how-to-show-hide-a-window/
+    settings_win.update()
+    settings_win.deiconify()
 
 
 def update_settings_infos():
-    global NB_QUEST, OPES_TO_TEST, SIZES, \
+    global OPES, OPES_TO_TEST, \
+           NB_QUEST, SIZES, \
            settings_txt_var
 
     message = ["TAILLES DES NOMBRES"]
@@ -246,7 +210,9 @@ RÉGLAGES MODIFIABLES : VOIR LE MENU
 # --------------------------- #
 
 def bulid_new_tests():
-    global root, QUIZZ_STARTED, TESTS
+    global OPES_TO_TEST, TESTS, \
+           NB_QUEST, SIZES, \
+           ope_to_do_txt_var
 
     if TESTS is None:
         ope_to_do_txt_var.set("\n\n")
@@ -258,27 +224,35 @@ def bulid_new_tests():
 
 
 def clear_answers():
-    entries_answers[0].delete(0, 'end')
-    entries_answers[1].delete(0, 'end')
+    global entries_answers
+
+    for i in range(2):
+        entries_answers[i].delete(0, 'end')
+        entries_answers[i].config(fg = "black")
 
 
 def hide_answers(indices):
-    if 1 in indices:
-        labels_answers_txt_var[0].set("")
-        entries_answers[0].config(
-            state = 'disabled',
-            bd    = 0
-        )
+    global labels_answers_txt_var, entries_answers
 
-    if 2 in indices:
-        labels_answers_txt_var[1].set("")
-        entries_answers[1].config(
-            state = 'disabled',
-            bd    = 0
-        )
+    for i in range(2):
+        if i in indices:
+            labels_answers_txt_var[i].set("")
+            entries_answers[i].config(
+                state = 'disabled',
+                bd    = 0
+            )
+
 
 def update_working():
+    global TESTS, \
+           NB_QUEST, \
+           labels_answers_txt_var, entries_answers, \
+           validate_but, working_frame
+
+    update_neuropict('question')
     clear_answers()
+
+    entries_answers[0].focus()
 
     last_test = TESTS[-1]
     quest_num = NB_QUEST - len(TESTS) + 1
@@ -309,7 +283,7 @@ def update_working():
 
     else:
         labels_answers_txt_var[1].set("")
-        hide_answers([2])
+        hide_answers([1])
 
 
     validate_but.config(text = 'VALIDER')
@@ -317,20 +291,60 @@ def update_working():
     working_frame.update()
 
 
+def errortxt(answer, good_answer):
+    answer = answer.strip()
+
+    if not answer.strip():
+        message = "RÉPONSE VIDE !"
+
+    elif not answer.isdigit():
+        message = "{0} : ON VEUT UN NOMBRE !"
+
+    else:
+        message = "{0} : PAS CORRECT  -->  BONNE RÉPONSE : {1}"
+
+    return message.format(
+        answer,
+        good_answer
+    )
+
+
+def show_bad(answers_wanted, answers_given):
+    global entries_answers
+
+    for i, ans in enumerate(answers_given):
+        good_ans = answers_wanted[i]
+
+        if ans != good_ans:
+            entries_answers[i].delete(0, 'end')
+            entries_answers[i].insert(0, errortxt(ans, good_ans))
+
+            entries_answers[i].config(fg="red")
+
+
+def update_neuropict(kind):
+    global neuropict
+
+    neuropict.config(
+        file = THIS_DIR + '/img/{0}.png'.format(kind)
+    )
+
+
 def validate_answer():
-    global NB_GOODS, TESTS, neuropict, ope_to_do
+    global TESTS, NB_GOODS, \
+           ope_to_do, ope_to_do_txt_var, \
+           entries_answers, validate_but, working_frame, report_win
 
 # Quizz starts.
     if TESTS is None:
-        if REPORT_WIN is not None:
-            REPORT_WIN.destroy()
+        report_win.withdraw()
 
         TESTS = []
         bulid_new_tests()
 
 # One question validated.
     else:
-        last_test = TESTS.pop(-1)
+        last_test = TESTS[-1]
 
         answers_wanted = [
             str(ans)
@@ -342,43 +356,54 @@ def validate_answer():
         if len(answers_wanted) == 2:
             answers_given.append(entries_answers[1].get())
 
-# GOOD
-        if answers_wanted == answers_given:
-            NB_GOODS += 1
-            imgname   = 'good'
+# BAD (CONTINUE)
+        if validate_but["text"] == 'CONTINUER':
+            we_continue = True
+
+            for i in range(2):
+                entries_answers[i].config(fg="black")
 
 # BAD
-        else:
-            imgname = 'bad'
+        elif answers_wanted != answers_given:
+            we_continue = False
 
-        neuropict.config(
-            file = THIS_DIR + '/img/{0}.png'.format(imgname)
-        )
+            update_neuropict('bad')
+            show_bad(answers_wanted, answers_given)
+            validate_but.config(text = 'CONTINUER')
+
+# GOOD
+        else:
+            we_continue = True
+
+            NB_GOODS += 1
+            update_neuropict('good')
 
 # We continue.
-        if TESTS:
-            update_working()
+        if we_continue:
+            TESTS.pop(-1)
+
+            if TESTS:
+                update_working()
 
 # This was the last question validated.
-        else:
+            else:
 # Restart a new test.
-            TESTS = None
+                TESTS = None
 
-            ope_to_do_txt_var.set("\n\n")
-            ope_to_do.config(bd = 0)
+                ope_to_do_txt_var.set("\n\n")
+                ope_to_do.config(bd = 0)
 
-            clear_answers()
-            hide_answers([1, 2])
+                clear_answers()
+                hide_answers([0, 1])
 
-            neuropict.config(file = THIS_DIR + '/img/question.png')
+                update_neuropict('question')
 
 
 # Report
-            show_report()
+                show_report()
 
 # Let(s go for another play !)
-            validate_but.config(text = 'RECOMMENCER')
-
+                validate_but.config(text = 'RECOMMENCER')
 
 # Force the update othe GUI.
         working_frame.update()
@@ -389,35 +414,13 @@ def validate_answer():
 # --------------------------- #
 
 def show_report():
-    global NB_QUEST, NB_GOODS, REPORT_WIN
+    global NB_QUEST, NB_GOODS, \
+           report_message, report_win
 
-    message = StringVar()
-    message.set(do_report(NB_QUEST, NB_GOODS))
+    report_message.set(do_report(NB_QUEST, NB_GOODS))
 
-    REPORT_WIN = Toplevel(master = root)
-    REPORT_WIN.title('Calculs au hasard - Score final')
-
-    larg_fen = 350
-    haut_fen = 150
-
-    xpos_fen = ypos_fen = 300
-
-    REPORT_WIN.geometry(
-        "{0}x{1}+{2}+{3}".format(
-            larg_fen, haut_fen,
-            xpos_fen, ypos_fen
-        )
-    )
-
-
-    report = Label(
-        master       = REPORT_WIN,
-        textvariable = message,
-        justify      = LEFT,
-        relief       = RAISED,
-        padx         = 5,
-    )
-    report.grid(row = 0, column = 0)
+    report_win.update()
+    report_win.deiconify()
 
 
 # ---------------- #
@@ -455,10 +458,63 @@ root.config(menu = menubar)
 
 
 # ------------------------- #
+# -- GUI - CONFIG DIALOG -- #
+# ------------------------- #
+
+settings_win = Toplevel(master = root)
+settings_win.title('Calculs au hasard - Réglages')
+
+# No destroy button.
+settings_win.protocol('WM_DELETE_WINDOW', lambda: None)
+
+settings_user_frame = Frame(master = settings_win)
+
+settings_user_frame.grid(
+    row  = 0, column = 0,
+    padx = 5, pady   = 5
+)
+
+settings_ids    = {}
+settings_labels = {}
+
+row = 0
+
+for kind, message in SETTINGS_GUI.items():
+    settings_labels[kind] = Label(
+        master = settings_user_frame,
+        text   = message
+    )
+
+    settings_labels[kind].grid(row = row, column = 0)
+
+    settings_ids[kind] =  Entry(
+        master = settings_user_frame,
+        relief = RAISED,
+    )
+
+    settings_ids[kind].grid(row = row, column = 1)
+
+    row += 1
+
+
+settings_doit_but = Button(
+    master  = settings_win,
+    text    = "MODIFIER",
+    command = lambda: update_settings(settings_ids, settings_labels),
+    bg      = BUTTON_BCK_COLOR,
+)
+
+settings_doit_but.grid(row = 1, column = 0)
+
+settings_win.withdraw()
+
+
+# ------------------------- #
 # -- GUI - SETTINGS AREA -- #
 # ------------------------- #
 
 settings_frame = Frame(master = root)
+
 settings_frame.grid(
     row  = 0, column = 0,
     padx = 5, pady   = 5
@@ -474,6 +530,7 @@ settings = Label(
     relief       = RAISED,
     padx         = 5,
 )
+
 settings.grid(row = 0, column = 0)
 
 setup_but = Button(
@@ -483,7 +540,11 @@ setup_but = Button(
     relief  = SOLID,
     bg      = BUTTON_BCK_COLOR,
 )
-setup_but.grid(row = 1, column = 0, pady = 10)
+
+setup_but.grid(
+    row  = 1, column = 0,
+    pady = 10
+)
 
 
 # ------------------------ #
@@ -491,6 +552,7 @@ setup_but.grid(row = 1, column = 0, pady = 10)
 # ------------------------ #
 
 working_frame = Frame(master = root)
+
 working_frame.grid(
     row  = 1, column = 0,
     padx = 5, pady   = 5
@@ -507,7 +569,11 @@ ope_to_do = Label(
     bd           = 0,
     padx         = 5,
 )
-ope_to_do.grid(row = 0, column = 0, pady = 5)
+
+ope_to_do.grid(
+    row  = 0, column = 0,
+    pady = 5
+)
 
 
 labels_answers         = {}
@@ -524,14 +590,17 @@ for i in range(2):
         textvariable = labels_answers_txt_var[i],
         justify      = CENTER,
     )
+
     labels_answers[i].grid(row = row, column = 0)
 
     entries_answers[i] =  Entry(
         master = working_frame,
         state  = 'disabled',
+        width  = 50,
         relief = RAISED,
         bd     = 0,
     )
+
     entries_answers[i].grid(row = row + 1, column = 0, pady = 5)
 
 
@@ -542,7 +611,11 @@ validate_but = Button(
     relief  = SOLID,
     bg      = BUTTON_BCK_COLOR,
 )
-validate_but.grid(row = 5, column = 0, pady = 5)
+
+validate_but.grid(
+    row  = 5, column = 0,
+    pady = 5
+)
 
 
 neuropict = PhotoImage(file = THIS_DIR + '/img/question.png')
@@ -551,11 +624,55 @@ neuropict_label = Label(
     master = working_frame,
     image  = neuropict
 )
+
 neuropict_label.grid(
     row    = 6,
     column = 0,
     sticky = "ew"
 )
+
+
+# ------------------------- #
+# -- GUI - REPORT DIALOG -- #
+# ------------------------- #
+
+report_win = Toplevel(master = root)
+report_win.title('Calculs au hasard - Score final')
+
+width_screen = 550
+height_screen = 150
+
+width_ecran = root.winfo_screenwidth()
+height_ecran = root.winfo_screenheight()
+
+xpos_screen = width_ecran // 2 - width_screen // 2
+ypos_screen = height_ecran // 2 - height_screen // 2
+
+report_win.geometry(
+    "{0}x{1}+{2}+{3}".format(
+        width_screen, height_screen,
+        xpos_screen , ypos_screen
+    )
+)
+
+
+report_message = StringVar()
+
+# Source: https://stackoverflow.com/a/31918553/4589608
+report_label = Label(
+    master       = report_win,
+    textvariable = report_message,
+    justify      = LEFT,
+    relief       = RAISED,
+    padx         = 5,
+    font         = Font(size=18)
+)
+report_label.pack(
+    anchor = 'center',  # H-centering
+    expand = 1          # V-centering
+)
+
+report_win.withdraw()
 
 
 # -------------- #

@@ -14,6 +14,22 @@ WIN, LOOSE, ILLEGAL = range(3)
 SET_WIN   = set([WIN])
 SET_LOOSE = set([LOOSE])
 
+# Since Python 3.6, dictionaries are implicitly ordered !
+RATE_MAX_COMMENTS = {
+    0.2: "il faut bosser encore un peu.",
+    0.4: "presque la moyenne !",
+    0.6: "c'est pas mal !",
+    0.8: "t'es une brute de calcul !",
+    1  : "presque tout bon gamin.e ! Impressionnant."
+}
+
+
+JUST_ONE_GOOD_COMMENT = "TOUT BON mon pote maaaaaaaaais tu n'as fait qu'un calcul !"
+
+MASTER_COMMENT = "oh my godness ! MY GODNESS HiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiYA  TOUT BON !!!"
+
+ZERO_CALC_COMMENT = "Aucune réponse juste, t'es une quiche..."
+
 
 # -------------- #
 # -- EVALUATE -- #
@@ -82,7 +98,7 @@ def do_report(nb_quest, nb_good):
     rate = nb_good / nb_quest
 
     if rate == 0:
-        report = "Aucune réponse juste, t'es une quiche..."
+        report = ZERO_CALC_COMMENT
 
     else:
         message_good = "bonne réponse"
@@ -99,30 +115,19 @@ def do_report(nb_quest, nb_good):
             nb_quest
         )
 
+# Since Python 3.6, dictionaries are implicitly ordered !
+        for ratemax, comment in RATE_MAX_COMMENTS.items():
+            if rate <= ratemax:
+                break
 
-        if rate <= 0.2:
-            comment = "il faut bosser encore un peu."
+        if rate == 1:
+            if nb_good == 1:
+                comment = JUST_ONE_GOOD_COMMENT
 
-        elif rate <= 0.4:
-            comment = "presque la moyenne !"
+            else:
+                comment = MASTER_COMMENT
 
-        elif rate <= 0.6:
-            comment = "c'est pas mal !"
-
-        elif rate <= 0.8:
-            comment = "t'es une brute de calcul !"
-
-        elif rate < 1:
-            comment = "presque tout bon gamin.e ! Impressionnant."
-
-        elif nb_good == 1:
-            comment = "TOUT BON mon pote maaaaaaaaais tu n'as fait qu'un calcul !"
-
-        else:
-            comment = "oh my godness ! MY GODNESS HiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiYA  TOUT BON !!!"
-
-
-        report = message_good + ", " + comment
+        report = message_good + "\n\n" + comment
 
 
     return report

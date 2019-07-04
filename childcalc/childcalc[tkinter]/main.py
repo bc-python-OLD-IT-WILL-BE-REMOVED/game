@@ -12,72 +12,76 @@ from model.eval import *
 # -- GUI - CONSTANTS -- #
 # --------------------- #
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 OPES_TO_TEST = ALL_SYMB_OP
 NB_QUEST     = 5
 SIZES        = DEFAULT_SIZES
 
-
-OPES_SET = set(ALL_SYMB_OP)
-
-
-TAG_NB_QUEST = "nbquest"
-TAG_OPE      = "ope"
-TAG_PLUS     = "+"
-TAG_MINUS    = "-"
-TAG_FACT_1   = "*_1"
-TAG_FACT_2   = "*_2"
-TAG_DIV_1    = "/_1"
-TAG_DIV_2    = "/_2"
-
-_TAG_CALLING_WIN_ = "_CALLING_WIN_"
-
+# For settings
+TAG_OPE = "ope"
 
 SETTINGS_UI = {
     TAG_NB_QUEST: "NOMBRE DE QUESTIONS",
     TAG_OPE     : "OPÉRATIONS VOULUES ( + - * / )",
     TAG_PLUS    : "TAILLE DES NOMBRES POUR LES ADDITIONS ET LES SOUSTRACTIONS",
-    TAG_FACT_1  : "TAILLE DU 1ER NOMBRE POUR LES PRODUITS",
-    TAG_FACT_2  : "TAILLE DU 2IÈME NOMBRE POUR LES PRODUITS",
+    TAG_MULT_1  : "TAILLE DU 1ER NOMBRE POUR LES PRODUITS",
+    TAG_MULT_2  : "TAILLE DU 2IÈME NOMBRE POUR LES PRODUITS",
     TAG_DIV_1   : "TAILLE DU NOMBRE À DIVISER POUR LES DIVISIONS",
     TAG_DIV_2   : "TAILLE DU NOMBRE QUI DIVISE POUR LES DIVISIONS",
 }
 
 
-TESTS = None
+TESTS      = None
+NB_GOODS   = 0
 
-NB_GOODS = 0
+REPORT_WIN   = None
+SETTINGS_WIN = None
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+BUTTON_BCK_COLOR = 'blue'
+
+
+# ----------- #
+# -- TOOLS -- #
+# ----------- #
+
+def txtdigit(i):
+    message = "chiffre"
+
+    if i != 1:
+        message += "s"
+
+    return "{0} {1}".format(i, message)
 
 
 # ---------------------------- #
 # -- GUI - SETTINGS ACTIONS -- #
 # ---------------------------- #
 
-
 def illegal_message(text):
     return text  + " -- << NON COMPRIS >>"
 
 def update_settings(ids, labels):
-    global OPES_TO_TEST, NB_QUEST, SIZES
+    global OPES_TO_TEST, NB_QUEST, SIZES, SETTINGS_WIN
 
     choices_are_ok = True
 
     for tag in ids:
-        if tag == _TAG_CALLING_WIN_:
-            continue
-
         choice = ids[tag].get()
 
 # Operations must be + , - , * or /
         if tag == TAG_OPE:
-            opeset_wanted = set(x.strip() for x in choice.split())
+            opeset_wanted = set(
+                x
+                for x in choice
+                if x.strip()
+            )
 
             if not opeset_wanted <= OPES_SET:
                 choices_are_ok = False
 
                 labels[tag].config(text = illegal_message(SETTINGS_UI[tag]))
-
 
             else:
                 OPES_TO_TEST = [
@@ -113,24 +117,31 @@ def update_settings(ids, labels):
 
                 SIZES[tag][int(pos) - 1] = choice
 
-
 # Everuthing is ok !
     if choices_are_ok:
         update_settings_infos()
-        ids[_TAG_CALLING_WIN_].destroy()
+
+        SETTINGS_WIN.destroy()
+        SETTINGS_WIN = None
 
 
 def change_settings():
-    settings_win = Toplevel(master = root)
-    settings_win.title('Calculs au hasard - Réglages')
+    global SETTINGS_WIN
 
-    user_frame = Frame(master = settings_win)
+    if SETTINGS_WIN is None:
+        SETTINGS_WIN = Toplevel(master = root)
+        SETTINGS_WIN.title('Calculs au hasard - Réglages')
+
+# No destroy button.
+        SETTINGS_WIN.protocol('WM_DELETE_WINDOW', lambda: None)
+
+    user_frame = Frame(master = SETTINGS_WIN)
     user_frame.grid(
         row  = 0, column = 0,
         padx = 5, pady   = 5
     )
 
-    ids    = {_TAG_CALLING_WIN_: settings_win}
+    ids    = {}
     labels = {}
     row    = 0
 
@@ -154,6 +165,7 @@ def change_settings():
 
         row += 1
 
+
     ids["nbquest"].insert(0, NB_QUEST)
     ids["ope"].insert(0, OPES_TO_TEST)
 
@@ -167,9 +179,10 @@ def change_settings():
 
 
     button = Button(
-        master = settings_win,
-        text   = "MODIFIER",
-        command = lambda: update_settings(ids, labels)
+        master  = SETTINGS_WIN,
+        text    = "MODIFIER",
+        command = lambda: update_settings(ids, labels),
+        bg      = BUTTON_BCK_COLOR,
     )
 
     button.grid(
@@ -193,17 +206,17 @@ def update_settings_infos():
         infos += " : "
 
         if symb == "*":
-            template = "1er facteur à {0} chiffre(s) et 2ième facteur à {1} chiffre(s)"
+            template = "1er facteur à {0} et 2ième facteur à {1}"
 
         elif symb == "/":
-            template  = "1er nombre à {0} chiffre(s) et diviseur à {1} chiffre(s)"
+            template  = "1er nombre à {0} et diviseur à {1}"
 
         else:
-            template  = "deux nombres à {0} chiffre(s)"
+            template  = "deux nombres à {0}"
 
         infos += template.format(
-            sizes[0],
-            sizes[1]
+            txtdigit(sizes[0]),
+            txtdigit(sizes[1])
         )
 
         message.append(infos)
@@ -236,7 +249,7 @@ def bulid_new_tests():
     global root, QUIZZ_STARTED, TESTS
 
     if TESTS is None:
-        ope_to_do_txt_var.set("Cliquer sur << COMMENCER >> !")
+        ope_to_do_txt_var.set("\n\n")
         return
 
     TESTS = do_test(OPES_TO_TEST, NB_QUEST, SIZES)
@@ -245,37 +258,73 @@ def bulid_new_tests():
 
 
 def clear_answers():
-    answer_1.delete(0, 'end')
-    answer_2.delete(0, 'end')
+    entries_answers[0].delete(0, 'end')
+    entries_answers[1].delete(0, 'end')
+
+
+def hide_answers(indices):
+    if 1 in indices:
+        labels_answers_txt_var[0].set("")
+        entries_answers[0].config(
+            state = 'disabled',
+            bd    = 0
+        )
+
+    if 2 in indices:
+        labels_answers_txt_var[1].set("")
+        entries_answers[1].config(
+            state = 'disabled',
+            bd    = 0
+        )
 
 def update_working():
-    last_test = TESTS[-1]
+    clear_answers()
 
-    ope_to_do_txt_var.set(last_test["ope"])
+    last_test = TESTS[-1]
+    quest_num = NB_QUEST - len(TESTS) + 1
+
+    ope_to_do_txt_var.set(
+        "Question {0} sur {1}\n\n{2}".format(
+            quest_num,
+            NB_QUEST,
+            last_test["ope"]
+        )
+    )
+
 
     labels = last_test["labels"]
 
-    label_answer_1_txt_var.set(labels[0])
-    answer_1.config(state = 'normal')
+    labels_answers_txt_var[0].set(labels[0])
+    entries_answers[0].config(
+        state = 'normal',
+        bd    = 2
+    )
 
     if len(labels) == 2:
-        label_answer_2_txt_var.set(labels[1])
-        answer_2.config(state = 'normal')
+        labels_answers_txt_var[1].set(labels[1])
+        entries_answers[1].config(
+            state = 'normal',
+            bd    = 2
+        )
 
     else:
-        label_answer_2_txt_var.set("")
-        answer_2.config(state = 'disabled')
+        labels_answers_txt_var[1].set("")
+        hide_answers([2])
 
-    clear_answers()
 
     validate_but.config(text = 'VALIDER')
 
+    working_frame.update()
+
 
 def validate_answer():
-    global NB_GOODS, TESTS, neuropict
+    global NB_GOODS, TESTS, neuropict, ope_to_do
 
 # Quizz starts.
     if TESTS is None:
+        if REPORT_WIN is not None:
+            REPORT_WIN.destroy()
+
         TESTS = []
         bulid_new_tests()
 
@@ -288,16 +337,15 @@ def validate_answer():
             for ans in last_test['answers']
         ]
 
-        answers_given = [answer_1.get()]
+        answers_given = [entries_answers[0].get()]
 
         if len(answers_wanted) == 2:
-            answers_given.append(answer_2.get())
+            answers_given.append(entries_answers[1].get())
 
 # GOOD
         if answers_wanted == answers_given:
             NB_GOODS += 1
-
-            imgname = 'good'
+            imgname   = 'good'
 
 # BAD
         else:
@@ -313,20 +361,63 @@ def validate_answer():
 
 # This was the last question validated.
         else:
-# Report
-
 # Restart a new test.
             TESTS = None
 
-            ope_to_do_txt_var.set("Cliquer sur << RECOMMENCER >> !")
-            clear_answers()
+            ope_to_do_txt_var.set("\n\n")
+            ope_to_do.config(bd = 0)
 
-            validate_but.config(text = 'RECOMMENCER')
+            clear_answers()
+            hide_answers([1, 2])
 
             neuropict.config(file = THIS_DIR + '/img/question.png')
 
+
+# Report
+            show_report()
+
+# Let(s go for another play !)
+            validate_but.config(text = 'RECOMMENCER')
+
+
 # Force the update othe GUI.
         working_frame.update()
+
+
+# --------------------------- #
+# -- GUI - WORKING ACTIONS -- #
+# --------------------------- #
+
+def show_report():
+    global NB_QUEST, NB_GOODS, REPORT_WIN
+
+    message = StringVar()
+    message.set(do_report(NB_QUEST, NB_GOODS))
+
+    REPORT_WIN = Toplevel(master = root)
+    REPORT_WIN.title('Calculs au hasard - Score final')
+
+    larg_fen = 350
+    haut_fen = 150
+
+    xpos_fen = ypos_fen = 300
+
+    REPORT_WIN.geometry(
+        "{0}x{1}+{2}+{3}".format(
+            larg_fen, haut_fen,
+            xpos_fen, ypos_fen
+        )
+    )
+
+
+    report = Label(
+        master       = REPORT_WIN,
+        textvariable = message,
+        justify      = LEFT,
+        relief       = RAISED,
+        padx         = 5,
+    )
+    report.grid(row = 0, column = 0)
 
 
 # ---------------- #
@@ -340,6 +431,8 @@ root.title('Calculs au hasard')
 # ----------------------- #
 # -- GUI - CONFIG MENU -- #
 # ----------------------- #
+
+# This is just for testing the use of menu.
 
 menubar = Menu(master = root)
 
@@ -388,8 +481,10 @@ setup_but = Button(
     text    = "CHANGER LES RÉGLAGES",
     command = change_settings,
     relief  = SOLID,
+    bg      = BUTTON_BCK_COLOR,
 )
-setup_but.grid(row = 1, column = 0)
+setup_but.grid(row = 1, column = 0, pady = 10)
+
 
 # ------------------------ #
 # -- GUI - WORKING AREA -- #
@@ -407,47 +502,37 @@ ope_to_do_txt_var = StringVar()
 ope_to_do = Label(
     master       = working_frame,
     textvariable = ope_to_do_txt_var,
-    justify      = LEFT,
+    justify      = CENTER,
     relief       = RAISED,
+    bd           = 0,
     padx         = 5,
 )
-ope_to_do.grid(row = 0, column = 0)
+ope_to_do.grid(row = 0, column = 0, pady = 5)
 
 
-label_answer_1_txt_var = StringVar()
+labels_answers         = {}
+labels_answers_txt_var = {}
+entries_answers        = {}
 
-label_answer_1 = Label(
-    master       = working_frame,
-    textvariable = label_answer_1_txt_var,
-    justify      = RIGHT,
-    padx         = 5,
-)
-label_answer_1.grid(row = 1, column = 0)
+for i in range(2):
+    row = 1 + 2*i
 
-answer_1 =  Entry(
-    master = working_frame,
-    state  = 'disabled',
-    relief = RAISED,
-)
-answer_1.grid(row = 2, column = 0)
+    labels_answers_txt_var[i] = StringVar()
 
+    labels_answers[i] = Label(
+        master       = working_frame,
+        textvariable = labels_answers_txt_var[i],
+        justify      = CENTER,
+    )
+    labels_answers[i].grid(row = row, column = 0)
 
-label_answer_2_txt_var = StringVar()
-
-label_answer_2 = Label(
-    master       = working_frame,
-    textvariable = label_answer_2_txt_var,
-    justify      = RIGHT,
-    padx         = 5,
-)
-label_answer_2.grid(row = 3, column = 0)
-
-answer_2 =  Entry(
-    master = working_frame,
-    state  = 'disabled',
-    relief = RAISED,
-)
-answer_2.grid(row = 4, column = 0)
+    entries_answers[i] =  Entry(
+        master = working_frame,
+        state  = 'disabled',
+        relief = RAISED,
+        bd     = 0,
+    )
+    entries_answers[i].grid(row = row + 1, column = 0, pady = 5)
 
 
 validate_but = Button(
@@ -455,8 +540,9 @@ validate_but = Button(
     text    = "COMMENCER",
     command = validate_answer,
     relief  = SOLID,
+    bg      = BUTTON_BCK_COLOR,
 )
-validate_but.grid(row = 5, column = 0)
+validate_but.grid(row = 5, column = 0, pady = 5)
 
 
 neuropict = PhotoImage(file = THIS_DIR + '/img/question.png')

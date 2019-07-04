@@ -1,4 +1,11 @@
 ==========
+2019-07-04
+==========
+
+Version 3.2: complete tkinter draft version (reporting has been added and some very little cosmetic changes have been done).
+
+
+==========
 2019-07-03
 ==========
 

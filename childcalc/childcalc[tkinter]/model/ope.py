@@ -1,10 +1,3 @@
-# ---------------- #
-# -- CONSTANTS -- #
-# ---------------- #
-
-SYMB_DIV = "/"
-
-
 # -------------------------- #
 # -- OPERATIONS EVALUATED -- #
 # -------------------------- #
@@ -29,8 +22,10 @@ def eucldiv(a, b):
 #     function doing the calculus
 # )
 
+TAG_DIV = "/"
+
 def _datas_message(ope_symb):
-    if ope_symb == SYMB_DIV:
+    if ope_symb == TAG_DIV:
         return "Divises {a} par {b}."
 
     return "Calcules {{a}} {ope} {{b}}.".format(ope = ope_symb)
@@ -39,17 +34,34 @@ def _datas_val(ope_symb, ope_name, func):
     return (_datas_message(ope_symb), ope_name, func)
 
 
-OPES = {
-    symb: _datas_val(symb, opename, func)
-    for symb, (opename, func) in {
-        "+": ("addition"      , add),
-        "-": ("soustraction"  , sub),
-        "*": ("multiplication", mult),
-        "/": ("division"      , eucldiv),
-    }.items()
-}
+# ---------------- #
+# -- CONSTANTS -- #
+# ---------------- #
+
+OPES = {}
+
+for symb, (opename, tag, func) in {
+    "+": ("addition"      , "PLUS" , add),
+    "-": ("soustraction"  , "MINUS", sub),
+    "*": ("multiplication", "MULT" , mult),
+    "/": ("division"      , "DIV"  , eucldiv),
+}.items():
+    OPES[symb] = _datas_val(symb, opename, func)
+
+    if symb in "*/":
+        for i in range(1, 3):
+            vars()[
+                "TAG_{0}_{1}".format(tag, i)
+            ] = "{0}_{1}".format(symb, i)
+
+    else:
+        vars()["TAG_{0}".format(tag)] = symb
+
 
 ALL_SYMB_OP = list(OPES.keys())
+
+OPES_SET = set(ALL_SYMB_OP)
+
 
 DEFAULT_SIZES = {}
 

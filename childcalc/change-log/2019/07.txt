@@ -1,4 +1,11 @@
 ==========
+2019-07-25
+==========
+
+Version 3.2.1: bug fixes in childcalc-draft-tui and some little enhacment in the ¨tui.
+
+
+==========
 2019-07-04
 ==========
 

@@ -9,8 +9,9 @@ SYMB_DIV = "/"
 
 WIN, LOOSE, ILLEGAL = range(3)
 
-SET_WIN   = set([WIN])
-SET_LOOSE = set([LOOSE])
+SET_ILLEGAL = set([ILLEGAL])
+SET_WIN     = set([WIN])
+SET_LOOSE   = set([LOOSE])
 
 
 # -------------------------- #
@@ -27,6 +28,8 @@ def mult(a, b):
     return a * b
 
 def eucldiv(a, b):
+    assert b != 0
+
     return (a // b, a % b)
 
 
@@ -84,7 +87,7 @@ def ask(ope_symbol, a_tmax, b_tmax):
 # Answers must be integers.
     for oneans in answers:
         if not oneans.isdigit():
-            return ILLEGAL
+            return [ILLEGAL]
 
     answers = [int(oneans) for oneans in answers]
 
@@ -279,26 +282,29 @@ def do_test(opes_to_test, nb_quest, sizes):
 
         a_tmax, b_tmax = sizes[ope_tested]
 
-        print()
-        score = ask(ope_tested, a_tmax, b_tmax)
+        score     = ask(ope_tested, a_tmax, b_tmax)
+        set_score = set(score)
 
-        if set(score) == SET_WIN:
+        if set_score == SET_WIN:
             nb_good += 1
 
             print("Bravo pour cette fois !")
 
-        elif score == ILLEGAL:
-            print("Les réponses sont des nombres !")
+        elif set_score == SET_ILLEGAL:
+            print("Les réponses sont toujours des nombres !")
 
-        elif set(score) == SET_LOOSE:
+        elif len(score) == 1:
             print("Dommage pour ce coup là...")
 
 # Only for divisions !
+        elif set_score == SET_LOOSE:
+            print("Aïe ! Ta division et ton reste sont faux.")
+
         elif score[0] == LOOSE:
-            print("Dommage pour ce coup là, ta division est fausse.")
+            print("Dommage pour ce coup là, seulement ta division est fausse.")
 
         else:
-            print("Dommage pour ce coup là, ton reste est faux.")
+            print("Dommage pour ce coup là, seulement ton reste est faux.")
 
     return nb_good
 
@@ -359,19 +365,32 @@ def do_report(nb_quest, nb_good):
     )
 
 
-def main():
-    continue_to_play = "oui"
+def setup():
+    opes_to_test = opes_wanted()
+    nb_quest     = nb_quest_wanted()
+    sizes        = sizes_wanted(opes_to_test)
 
-    while continue_to_play == "oui":
-        opes_to_test = opes_wanted()
-        nb_quest     = nb_quest_wanted()
-        sizes        = sizes_wanted(opes_to_test)
+    return opes_to_test, nb_quest, sizes
+
+
+def main():
+    continue_to_play = "a"
+
+    while continue_to_play in ["a", "c"]:
+        if continue_to_play == "a":
+            opes_to_test, nb_quest, sizes = setup()
 
         nb_good = do_test(opes_to_test, nb_quest, sizes)
 
         do_report(nb_quest, nb_good)
 
-        continue_to_play = input("\nVeux-tu continuer ? [oui | non] ")
+        continue_to_play = input("""Que veux-tu ?
+    [c] Continuer le même type de calculs.
+    [a] Faire d'autres types de calcul.
+    [x] Arrêter.
+
+Choix : """
+        )
         continue_to_play = continue_to_play.lower()
 
 
